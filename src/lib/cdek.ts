@@ -49,7 +49,7 @@ export interface DeliveryQuote {
 
 export async function calculateDelivery(params: CalculateDeliveryParams): Promise<DeliveryQuote> {
   const token = await getCdekToken();
-  const res = await fetch(`${CDEK_API}/calculator/tariffbycode`, {
+  const res = await fetch(`${CDEK_API}/calculator/tariff`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

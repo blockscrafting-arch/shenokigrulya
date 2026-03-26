@@ -46,6 +46,7 @@ export function AddToCartButton({ product }: AddToCartButtonProps) {
       price: product.price,
       quantity: 1,
       image: product.images[0] ?? null,
+      weight: product.weight ?? null,
     });
   };
 

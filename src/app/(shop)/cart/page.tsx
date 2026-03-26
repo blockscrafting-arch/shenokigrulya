@@ -33,10 +33,18 @@ export default function CartPage() {
   const deliveryCost = deliveryChoice?.deliveryCost ?? 0;
   const totalWithDelivery = totalPrice + deliveryCost;
 
-  const goods = useMemo(
-    () => Array.from({ length: Math.max(1, totalItems) }, () => SINGLE_PACKAGE),
-    [totalItems]
-  );
+  const goods = useMemo(() => {
+    const activeItems = items.filter((i) => i.quantity > 0);
+    if (!activeItems.length) return [SINGLE_PACKAGE];
+    return activeItems.flatMap((i) =>
+      Array.from({ length: i.quantity }, () => ({
+        weight: i.weight ?? SINGLE_PACKAGE.weight,
+        length: SINGLE_PACKAGE.length,
+        width: SINGLE_PACKAGE.width,
+        height: SINGLE_PACKAGE.height,
+      }))
+    );
+  }, [items]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

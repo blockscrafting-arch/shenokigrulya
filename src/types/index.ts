@@ -8,4 +8,5 @@ export interface CartItem {
   price: number;
   quantity: number;
   image: string | null;
+  weight?: number | null;
 }

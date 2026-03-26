@@ -110,6 +110,13 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
   }, [fromCity, goods]);
 
   useEffect(() => {
+    // При смене goods (количества/параметров посылок) сбрасываем виджет
+    // чтобы он переинициализировался с актуальными данными
+    const root = document.getElementById(WIDGET_ROOT_ID);
+    if (root) {
+      root.removeAttribute("data-cdek-inited");
+      root.innerHTML = "";
+    }
     if (window.CDEKWidget) initWidget();
   }, [initWidget]);
 

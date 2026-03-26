@@ -70,10 +70,15 @@ export async function POST(request: Request) {
   if (data.deliveryCityCode && fromCityCode) {
     try {
       const tariffCode = data.deliveryType === "CDEK_DOOR" ? 139 : 136;
+      // Суммарный вес заказа — из реальных данных товаров в БД, fallback 3000г на позицию
+      const totalWeightG = orderItems.reduce((sum, item) => {
+        const product = productMap.get(item.productId);
+        return sum + (product?.weight ?? 3000) * item.quantity;
+      }, 0);
       const quote = await calculateDelivery({
         fromLocation: fromCityCode,
         toLocation: String(data.deliveryCityCode),
-        weight: 3000,
+        weight: totalWeightG,
         length: 370,
         width: 130,
         height: 230,
