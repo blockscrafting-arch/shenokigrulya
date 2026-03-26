@@ -18,11 +18,25 @@ export interface CreatePaymentParams {
   description: string;
   returnUrl: string;
   customerEmail: string;
+  deliveryCost: number;
   items: { title: string; quantity: number; price: number }[];
 }
 
 export async function createPayment(params: CreatePaymentParams): Promise<{ confirmationUrl: string; paymentId: string }> {
   const idempotenceKey = crypto.randomUUID();
+
+  const receiptItems = [
+    ...params.items.map((item) => ({
+      description: item.title,
+      quantity: item.quantity.toString(),
+      amount: { value: (item.price / 100).toFixed(2), currency: "RUB" },
+      vat_code: 1,
+    })),
+    ...(params.deliveryCost > 0
+      ? [{ description: "Доставка", quantity: "1", amount: { value: (params.deliveryCost / 100).toFixed(2), currency: "RUB" }, vat_code: 1 }]
+      : []),
+  ];
+
   const response = await fetch(YOOKASSA_API, {
     method: "POST",
     headers: {
@@ -37,12 +51,7 @@ export async function createPayment(params: CreatePaymentParams): Promise<{ conf
       metadata: { orderId: params.orderId },
       receipt: {
         customer: { email: params.customerEmail },
-        items: params.items.map((item) => ({
-          description: item.title,
-          quantity: item.quantity.toString(),
-          amount: { value: (item.price / 100).toFixed(2), currency: "RUB" },
-          vat_code: 1,
-        })),
+        items: receiptItems,
       },
     }),
   });

@@ -54,6 +54,7 @@ export async function POST(request: Request) {
           description: `Заказ #${order.orderNumber}`,
           returnUrl: returnUrl(order.id),
           customerEmail: order.customerEmail,
+          deliveryCost: order.deliveryCost,
           items: order.items.map((i) => ({
             title: i.product.title,
             quantity: i.quantity,
