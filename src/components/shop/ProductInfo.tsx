@@ -66,7 +66,7 @@ function CompositionBlock({ content }: { content: string }) {
   return (
     <div className="min-w-0 w-full">
       <p className="text-[15px] leading-[1.65] text-ink-secondary">
-        <span className="font-heading text-[17px] font-bold uppercase tracking-tight text-ink-dark">
+        <span className="font-subheading text-[17px] font-bold uppercase leading-[28.05px] tracking-[-0.43px] text-ink-dark">
           СОСТАВ:{" "}
         </span>
         {displayText}

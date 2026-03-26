@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
@@ -32,6 +32,11 @@ export default function CartPage() {
 
   const deliveryCost = deliveryChoice?.deliveryCost ?? 0;
   const totalWithDelivery = totalPrice + deliveryCost;
+
+  const goods = useMemo(
+    () => Array.from({ length: Math.max(1, totalItems) }, () => SINGLE_PACKAGE),
+    [totalItems]
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -343,7 +348,30 @@ export default function CartPage() {
             </h2>
             <DeliveryWidget
               fromCity={fromCity}
-              goods={Array.from({ length: Math.max(1, totalItems) }, () => SINGLE_PACKAGE)}
+              goods={goods}
+              yandexMapsApiKey={yandexKey}
+              onChoose={setDeliveryChoice}
+            />
+            
+            {deliveryChoice && (
+              <div className="mt-6 flex items-center gap-3 rounded-xl bg-green-50 p-4">
+                <svg className="h-5 w-5 shrink-0 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="text-[14px] font-bold text-green-800 uppercase tracking-wide leading-snug">
+                  {deliveryChoice.deliveryType === "CDEK_PVZ" ? "ПВЗ" : "На дом"} &mdash; {deliveryChoice.cdekPvzAddress || deliveryChoice.deliveryAddress}
+                </p>
+              </div>
+            )}
+          </section>
+          {/* Delivery */}
+          <section className="bg-white rounded-[2rem] p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
+            <h2 className="mb-4 font-heading text-3xl font-bold text-ink-dark uppercase tracking-wide">
+              Доставка
+            </h2>
+            <DeliveryWidget
+              fromCity={fromCity}
+              goods={goods}
               yandexMapsApiKey={yandexKey}
               onChoose={setDeliveryChoice}
             />

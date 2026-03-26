@@ -40,6 +40,7 @@ const config: Config = {
       },
       fontFamily: {
         heading: ["var(--font-heading)", "Georgia", "serif"],
+        subheading: ["var(--font-subheading)", "sans-serif"],
         body: ["var(--font-body)", "system-ui", "sans-serif"],
         ozon: ["var(--font-ozon)", "Nunito", "Comfortaa", "system-ui", "sans-serif"],
       },

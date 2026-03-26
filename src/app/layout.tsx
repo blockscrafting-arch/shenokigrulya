@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Nunito } from "next/font/google";
+import { Inter, Nunito, Oswald } from "next/font/google";
 import localFont from "next/font/local";
 import { CartProvider } from "@/hooks/useCart";
 import { FigmaCaptureScript } from "@/components/FigmaCaptureScript";
@@ -16,6 +16,13 @@ const bebasNeue = localFont({
   weight: "700",
   style: "normal",
   variable: "--font-heading",
+  display: "swap",
+});
+
+const oswald = Oswald({
+  subsets: ["latin", "cyrillic"],
+  variable: "--font-subheading",
+  weight: ["700"],
   display: "swap",
 });
 
@@ -66,7 +73,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru" className={`${inter.variable} ${bebasNeue.variable} ${nunito.variable}`}>
+      <html lang="ru" className={`${inter.variable} ${bebasNeue.variable} ${nunito.variable} ${oswald.variable}`}>
       <body className="min-h-screen antialiased font-body bg-white text-ink">
         {process.env.NODE_ENV === "development" && <FigmaCaptureScript />}
         <CartProvider>{children}</CartProvider>
