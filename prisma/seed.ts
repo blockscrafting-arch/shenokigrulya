@@ -24,8 +24,8 @@ async function main() {
     where: { id: "seed-product-1" },
     update: {
       images: [
-        "/uploads/1.png",
         "/uploads/2.png",
+        "/uploads/1.png",
         "/uploads/3.jpg",
         "/uploads/4.jpg",
         "/uploads/6.jpg",
@@ -48,8 +48,8 @@ async function main() {
       ozonUrl: "https://www.ozon.ru/product/gipoallergennyy-suhoy-korm-klassa-holistik-dlya-vzroslyh-sobak-krupnyh-i-srednih-porod-so-2796505026/",
       badges: ["Гипоаллергенный", "Холистик", "Без глютена"],
       images: [
-        "/uploads/1.png",
         "/uploads/2.png",
+        "/uploads/1.png",
         "/uploads/3.jpg",
         "/uploads/4.jpg",
         "/uploads/6.jpg",
