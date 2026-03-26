@@ -80,9 +80,9 @@ export async function POST(request: Request) {
         tariffCode,
       });
       verifiedDeliveryCost = quote.sum;
-    } catch {
+    } catch (err) {
       // Если СДЭК API недоступен — принимаем клиентскую стоимость с предупреждением
-      console.warn("CDEK delivery cost verification failed — using client value:", data.deliveryCost);
+      console.warn("CDEK delivery cost verification failed — using client value:", data.deliveryCost, err);
     }
   }
 

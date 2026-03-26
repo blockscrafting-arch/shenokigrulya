@@ -56,11 +56,11 @@ export async function calculateDelivery(params: CalculateDeliveryParams): Promis
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
-      from_location: { code: params.fromLocation },
-      to_location: { code: params.toLocation },
+      from_location: { code: Number(params.fromLocation) },
+      to_location: { code: Number(params.toLocation) },
       packages: [
         {
-          weight: params.weight / 1000,
+          weight: params.weight,
           length: params.length / 10,
           width: params.width / 10,
           height: params.height / 10,
