@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Щенок Игруля — Корзина</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', system-ui, sans-serif; background: #F4F4F4; color: #111; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+
+    /* Header */
+    .header { background: #fff; border-bottom: 1px solid #EAEAEA; }
+    .header-inner { max-width: 1200px; margin: 0 auto; padding: 0 32px; height: 96px; display: flex; align-items: center; justify-content: space-between; }
+    .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .logo-circle { width: 64px; height: 64px; background: linear-gradient(135deg,#0088cc,#00b4e8); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; }
+    .logo-text { font-family: 'Oswald',sans-serif; font-size: 22px; font-weight:700; color:#111; letter-spacing:0.04em; text-transform:uppercase; }
+    .logo-sub { font-size:11px; font-weight:500; color:#666; letter-spacing:0.08em; text-transform:uppercase; margin-top:2px; }
+    .cart-link { display:flex; align-items:center; gap:8px; color:#0088cc; text-decoration:none; font-size:14px; font-weight:600; padding:8px 12px; border-radius:8px; }
+
+    /* Main layout */
+    .main { max-width: 1200px; margin: 0 auto; padding: 40px 32px 64px; }
+    .cart-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+    .left-col { grid-column: span 2; display: flex; flex-direction: column; gap: 24px; }
+
+    /* Cards */
+    .card { background: #fff; border-radius: 32px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.03); }
+
+    /* Section headings */
+    .section-title { font-family: 'Oswald',sans-serif; font-size: 28px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; color:#111; }
+    .section-count { font-family: 'Oswald',sans-serif; font-size: 24px; font-weight:700; color:#999; }
+
+    /* Cart item */
+    .cart-item { display:flex; gap:16px; padding: 20px 0; border-top: 1px solid #EAEAEA; }
+    .cart-item:first-child { border-top: none; padding-top: 0; }
+    .item-img {
+      width:88px; height:110px; flex-shrink:0; border-radius:16px; overflow:hidden;
+      background: linear-gradient(145deg,#5bc8ef,#7aade8);
+      display:flex; align-items:center; justify-content:center; font-size:48px;
+    }
+    .item-info { flex:1; min-width:0; display:flex; flex-direction:column; gap:10px; }
+    .item-header { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+    .item-title { font-size:14px; font-weight:700; color:#111; line-height:1.4; }
+    .item-del { color:#ccc; font-size:18px; line-height:1; cursor:pointer; flex-shrink:0; }
+    .item-weight { display:inline-block; background:#F2F2F2; padding:4px 10px; border-radius:8px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#666; }
+    .item-controls { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:auto; }
+    .qty-ctrl { display:flex; align-items:center; background:#F2F2F2; border-radius:12px; padding:4px; }
+    .qty-btn { width:32px; height:32px; border:none; background:none; cursor:pointer; font-size:20px; font-weight:700; border-radius:8px; display:flex; align-items:center; justify-content:center; color:#111; }
+    .qty-num { width:32px; text-align:center; font-size:15px; font-weight:900; }
+    .item-price { font-family:'Oswald',sans-serif; font-size:20px; font-weight:700; color:#0088cc; white-space:nowrap; }
+
+    /* Clear btn */
+    .clear-btn { display:flex; align-items:center; gap:6px; font-size:14px; font-weight:700; color:#666; background:none; border:none; cursor:pointer; }
+
+    /* Receiver form */
+    .form-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:16px; }
+    .form-group { display:flex; flex-direction:column; gap:8px; }
+    .form-label { font-size:13px; font-weight:700; color:#666; }
+    .form-input { width:100%; padding:16px 20px; border:1.5px solid rgba(0,0,0,0.15); border-radius:999px; font-size:15px; color:#111; font-family:'Inter',sans-serif; background:#fff; outline:none; }
+
+    /* Delivery placeholder */
+    .delivery-placeholder {
+      min-height: 280px; border-radius: 20px;
+      border: 1.5px dashed #D0D0D0; background: #FAFAFA;
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:12px; color:#BBB; font-size:14px; font-weight:500; text-align:center; padding:24px;
+    }
+    .delivery-icon { font-size:48px; }
+
+    /* Delivery chosen */
+    .delivery-chosen { display:flex; align-items:center; gap:12px; background:#f0faf5; border-radius:16px; padding:16px; margin-top:20px; }
+    .delivery-check { color:#22c55e; font-size:20px; }
+    .delivery-addr { font-size:14px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#166534; }
+
+    /* Summary card */
+    .summary-card { background:#0088cc; border-radius:32px; padding:32px; color:#fff; box-shadow: 0 20px 40px rgba(0,136,204,0.35); position:sticky; top:32px; }
+    .summary-hint { font-size:13px; color:rgba(255,255,255,0.55); margin-bottom:20px; }
+    .summary-title { font-family:'Oswald',sans-serif; font-size:36px; font-weight:700; text-transform:uppercase; }
+    .summary-amount { font-family:'Oswald',sans-serif; font-size:15px; color:rgba(255,255,255,0.55); margin-top:4px; margin-bottom:24px; }
+    .summary-line { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:500; margin-bottom:12px; }
+    .summary-label { color:rgba(255,255,255,0.6); }
+    .summary-dots { flex:1; border-bottom: 1px dotted rgba(255,255,255,0.2); }
+    .summary-val { font-weight:700; white-space:nowrap; }
+    .summary-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); margin:20px 0; }
+    .btn-pay { width:100%; padding:20px; background:#fff; color:#0088cc; font-family:'Oswald',sans-serif; font-size:22px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; border:none; border-radius:999px; cursor:pointer; }
+    .summary-legal { margin-top:24px; font-size:12px; color:rgba(255,255,255,0.4); line-height:1.55; max-width:260px; }
+
+    /* Footer */
+    .footer { border-top:1px solid #EAEAEA; background:#fff; }
+    .footer-inner { max-width:1200px; margin:0 auto; padding:24px 32px; text-align:center; font-size:12px; color:#999; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="#" class="logo">
+      <div class="logo-circle">🐾</div>
+      <div>
+        <div class="logo-text">Щенок Игруля</div>
+        <div class="logo-sub">Корм для собак</div>
+      </div>
+    </a>
+    <a href="#" class="cart-link">
+      <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/>
+      </svg>
+      Корзина
+      <span style="background:#0088cc;color:#fff;border-radius:50%;width:20px;height:20px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;">2</span>
+    </a>
+  </div>
+</header>
+
+<main class="main">
+  <div class="cart-grid">
+    <div class="left-col">
+
+      <!-- Cart items -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span class="section-title">Корзина</span>
+            <span class="section-count">2</span>
+          </div>
+          <button class="clear-btn">
+            Очистить корзину
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Item 1 -->
+        <div class="cart-item" style="border-top:none;padding-top:0;">
+          <div class="item-img">📦</div>
+          <div class="item-info">
+            <div class="item-header">
+              <span class="item-title">Корм для средних и крупных пород — Щенок Игруля</span>
+              <span class="item-del">×</span>
+            </div>
+            <span class="item-weight">3 кг</span>
+            <div class="item-controls">
+              <div class="qty-ctrl">
+                <button class="qty-btn">−</button>
+                <span class="qty-num">2</span>
+                <button class="qty-btn">+</button>
+              </div>
+              <span class="item-price">5&nbsp;980&nbsp;₽</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Item 2 -->
+        <div class="cart-item">
+          <div class="item-img" style="background:linear-gradient(145deg,#a8f0d0,#60d8a8);">📦</div>
+          <div class="item-info">
+            <div class="item-header">
+              <span class="item-title">Корм для средних и крупных пород — Щенок Игруля</span>
+              <span class="item-del">×</span>
+            </div>
+            <span class="item-weight">3 кг</span>
+            <div class="item-controls">
+              <div class="qty-ctrl">
+                <button class="qty-btn">−</button>
+                <span class="qty-num">1</span>
+                <button class="qty-btn">+</button>
+              </div>
+              <span class="item-price">2&nbsp;990&nbsp;₽</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Receiver -->
+      <div class="card">
+        <span class="section-title">Получатель</span>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Имя и фамилия</label>
+            <input class="form-input" type="text" value="Иванов Иван" readonly />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Телефон</label>
+            <input class="form-input" type="tel" value="+7 900 000-00-00" readonly />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Электронная почта</label>
+            <input class="form-input" type="email" value="mail@example.com" readonly />
+          </div>
+        </div>
+      </div>
+
+      <!-- Delivery -->
+      <div class="card">
+        <span class="section-title">Доставка</span>
+        <div style="margin-top:20px;" class="delivery-placeholder">
+          <div class="delivery-icon">🚚</div>
+          <div>Виджет СДЭК — выбор пункта выдачи или курьера на дом</div>
+          <div style="font-size:12px;color:#D0D0D0;">Интерактивная карта с ПВЗ</div>
+        </div>
+        <div class="delivery-chosen">
+          <span class="delivery-check">✅</span>
+          <span class="delivery-addr">ПВЗ — Москва, ул. Пушкина, д. 1</span>
+        </div>
+      </div>
+
+    </div><!-- /left-col -->
+
+    <!-- Summary -->
+    <div>
+      <div class="summary-card">
+        <p class="summary-hint">Осталось указать контактные данные</p>
+
+        <div class="section-title" style="color:#fff;">К&nbsp;оплате</div>
+        <div class="summary-amount">9&nbsp;370&nbsp;₽</div>
+
+        <div class="summary-line">
+          <span class="summary-label">Товары</span>
+          <span class="summary-dots"></span>
+          <span class="summary-val">8&nbsp;970&nbsp;₽</span>
+        </div>
+        <div class="summary-line">
+          <span class="summary-label">Доставка СДЭК</span>
+          <span class="summary-dots"></span>
+          <span class="summary-val">400&nbsp;₽</span>
+        </div>
+        <div class="summary-line" style="font-size:12px;color:rgba(255,255,255,0.4);margin-top:4px;">
+          Срок доставки: 3–6 дн.
+        </div>
+
+        <hr class="summary-divider" />
+
+        <button class="btn-pay">Оформить заказ</button>
+
+        <p class="summary-legal">
+          Согласен с условиями обработки данных, пользовательского соглашения и оферты
+        </p>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">© 2026 Щенок Игруля. Все права защищены.</div>
+</footer>
+
+</body>
+</html>

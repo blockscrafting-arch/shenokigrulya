@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Щенок Игруля — Карточка товара</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oswald:wght@700&family=Nunito:wght@900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: #F4F4F4;
+      color: #111111;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: #fff;
+      border-bottom: 1px solid #EAEAEA;
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 32px;
+      height: 96px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .logo-circle {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, #0088cc, #00b4e8);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 26px;
+    }
+    .logo-text { font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 700; color: #111; letter-spacing: 0.04em; text-transform: uppercase; }
+    .logo-sub { font-size: 11px; font-weight: 500; color: #666; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; }
+    .cart-link {
+      display: flex; align-items: center; gap: 8px;
+      color: #666; text-decoration: none; font-size: 14px; font-weight: 500;
+      padding: 8px 12px; border-radius: 8px;
+    }
+    .cart-icon { width: 32px; height: 32px; stroke: #666; fill: none; stroke-width: 1.8; }
+    .cart-badge {
+      background: #0088cc; color: #fff;
+      border-radius: 50%; width: 20px; height: 20px;
+      font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Main ── */
+    .main { max-width: 1200px; margin: 0 auto; padding: 48px 32px 64px; }
+    .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; }
+
+    /* ── Gallery ── */
+    .gallery-wrap { display: flex; flex-direction: row; gap: 16px; align-items: flex-start; }
+    .thumbnails { display: flex; flex-direction: column; gap: 12px; width: 80px; flex-shrink: 0; }
+    .thumb {
+      width: 80px; height: 80px; border-radius: 12px; overflow: hidden;
+      cursor: pointer; opacity: 0.55; border: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .thumb.active { opacity: 1; border-color: #0088cc; }
+    .thumb-img { width: 100%; height: 100%; object-fit: cover; }
+    .thumb-placeholder {
+      width: 100%; height: 100%;
+      background: linear-gradient(135deg, #cce8f4 0%, #a8d8f0 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+
+    .gallery-main {
+      flex: 1; min-width: 0;
+      aspect-ratio: 4/5;
+      border-radius: 28px;
+      overflow: hidden;
+      background: linear-gradient(145deg, #5bc8ef 0%, #7aade8 35%, #a78be8 70%, #6ec6de 100%);
+      position: relative;
+    }
+    .gallery-main-img { width: 100%; height: 100%; object-fit: cover; }
+    .gallery-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      width: 40px; height: 40px; border-radius: 50%;
+      background: rgba(255,255,255,0.92); border: 1px solid rgba(0,0,0,0.08);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    .gallery-nav.prev { left: 12px; }
+    .gallery-nav.next { right: 12px; }
+    .gallery-nav svg { width: 16px; height: 16px; stroke: #0088cc; fill: none; stroke-width: 2.5; }
+
+    /* Overlay product image */
+    .product-pack {
+      position: absolute; bottom: -10%; left: 50%; transform: translateX(-50%);
+      width: 72%; filter: drop-shadow(0 24px 48px rgba(0,0,0,0.28));
+    }
+
+    /* ── Product Info ── */
+    .info { display: flex; flex-direction: column; }
+    .product-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 38px; font-weight: 700; text-transform: uppercase;
+      line-height: 1.08; letter-spacing: 0.02em; color: #111;
+    }
+    .product-sub {
+      font-size: 16px; font-weight: 500; color: #111; margin-top: 14px; line-height: 1.45;
+    }
+    .price-row { margin-top: 20px; }
+    .price {
+      font-size: 36px; font-weight: 900; color: #0088cc; letter-spacing: -0.01em;
+    }
+
+    /* Badges */
+    .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #fff; border: 1px solid rgba(0,0,0,0.10);
+      border-radius: 14px; padding: 8px 14px;
+      font-size: 15px; font-weight: 700; color: #111;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .badge-icon { font-size: 18px; line-height: 1; }
+
+    /* Composition */
+    .composition { margin-top: 14px; margin-bottom: 24px; }
+    .composition p { font-size: 15px; line-height: 1.65; color: #666; }
+    .composition strong { font-family: 'Oswald', sans-serif; font-size: 17px; color: #111; text-transform: uppercase; letter-spacing: 0.04em; }
+
+    /* Buttons */
+    .btn-cart {
+      width: 100%; padding: 20px 32px;
+      background: #0088cc; color: #fff;
+      font-family: 'Oswald', sans-serif; font-size: 20px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.06em;
+      border: none; border-radius: 16px; cursor: pointer;
+      box-shadow: 0 20px 40px rgba(0, 136, 204, 0.30);
+    }
+    .cheaper {
+      text-align: center; margin-top: 14px; margin-bottom: 4px;
+      font-family: 'Oswald', sans-serif; font-size: 15px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em; color: #666;
+    }
+    .btn-ozon {
+      width: 100%; min-height: 76px; border-radius: 24px; overflow: hidden;
+      position: relative; display: flex; align-items: center; justify-content: center;
+      border: none; cursor: pointer;
+    }
+    .ozon-bg {
+      position: absolute; inset: -10%;
+      background: repeating-linear-gradient(122deg, #005BFF 0px, #005BFF 18px, #F91155 18px, #F91155 36px);
+    }
+    .ozon-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .ozon-top { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: #fff; }
+    .ozon-name { font-family: 'Nunito', sans-serif; font-size: 34px; font-weight: 900; color: #fff; text-transform: uppercase; letter-spacing: 0.04em; transform: rotate(-7deg); text-shadow: 0 2px 10px rgba(0,0,0,0.4); }
+
+    /* ── Footer ── */
+    .footer { border-top: 1px solid #EAEAEA; background: #fff; }
+    .footer-inner { max-width: 1200px; margin: 0 auto; padding: 24px 32px; text-align: center; font-size: 12px; color: #999; }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <a href="#" class="logo">
+      <div class="logo-circle">🐾</div>
+      <div>
+        <div class="logo-text">Щенок Игруля</div>
+        <div class="logo-sub">Корм для собак</div>
+      </div>
+    </a>
+    <a href="#" class="cart-link">
+      <svg class="cart-icon" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/>
+      </svg>
+      Корзина
+    </a>
+  </div>
+</header>
+
+<main class="main">
+  <div class="product-grid">
+    <!-- GALLERY -->
+    <div class="gallery-wrap">
+      <div class="thumbnails">
+        <div class="thumb active">
+          <div class="thumb-placeholder" style="background:linear-gradient(135deg,#5bc8ef,#7aade8)">📦</div>
+        </div>
+        <div class="thumb">
+          <div class="thumb-placeholder" style="background:linear-gradient(135deg,#a8d8f0,#cce8f4)">📊</div>
+        </div>
+        <div class="thumb">
+          <div class="thumb-placeholder" style="background:linear-gradient(135deg,#b0e8d0,#7ad8b8)">🐕</div>
+        </div>
+        <div class="thumb">
+          <div class="thumb-placeholder" style="background:linear-gradient(135deg,#f8d0a8,#f4b870)">📋</div>
+        </div>
+        <div class="thumb">
+          <div class="thumb-placeholder" style="background:linear-gradient(135deg,#d4a8f8,#b878e8)">❤️</div>
+        </div>
+        <div class="thumb">
+          <div class="thumb-placeholder" style="background:linear-gradient(135deg,#f8e0a8,#f8c840)">🐾</div>
+        </div>
+      </div>
+
+      <div class="gallery-main">
+        <!-- gradient bg + centered pack emoji -->
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+          <div style="font-size:200px;line-height:1;filter:drop-shadow(0 32px 64px rgba(0,0,0,0.3));transform:rotate(-8deg);">📦</div>
+        </div>
+        <div class="gallery-nav prev">
+          <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+        </div>
+        <div class="gallery-nav next">
+          <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- INFO -->
+    <div class="info">
+      <h1 class="product-title">Корм для средних<br>и крупных пород</h1>
+      <p class="product-sub">Полнорационный корм класса холистик<br>для взрослых собак. Придуман волонтёрами в приютах.</p>
+
+      <div class="price-row">
+        <span class="price">2&nbsp;990&nbsp;₽</span>
+      </div>
+
+      <div class="badges">
+        <span class="badge"><span class="badge-icon">🛡️</span> Гипоаллергенный</span>
+        <span class="badge"><span class="badge-icon">🥩</span> Холистик</span>
+        <span class="badge"><span class="badge-icon">🥩</span> 37,5% мяса индейки</span>
+        <span class="badge"><span class="badge-icon">🌿</span> Без глютена</span>
+        <span class="badge"><span class="badge-icon">🌿</span> Натуральный</span>
+      </div>
+
+      <div class="composition">
+        <p><strong>Состав: </strong>Дегидратированное мясо индейки (37,5%), горох, рис, кукуруза, подсолнечное масло, свекольная пульпа, витамины и минералы, лосось (источник Омега-3 и 6).</p>
+      </div>
+
+      <div>
+        <button class="btn-cart">В корзину</button>
+        <p class="cheaper">Цена ниже, чем на маркетплейсах</p>
+        <button class="btn-ozon">
+          <div class="ozon-bg"></div>
+          <div class="ozon-content">
+            <span class="ozon-top">Купить на</span>
+            <span class="ozon-name">OZON</span>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">© 2026 Щенок Игруля. Все права защищены.</div>
+</footer>
+
+</body>
+</html>

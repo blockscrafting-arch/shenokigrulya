@@ -1,0 +1,49 @@
+# dependencies
+node_modules
+.pnp
+.pnp.js
+
+# testing
+coverage
+
+# next.js
+.next/
+out/
+
+# production
+build
+dist
+
+# misc
+.DS_Store
+tsconfig.tsbuildinfo
+*.pem
+.env
+.env*.local
+.env.production
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# prisma
+prisma/migrations/**/migration_lock.toml
+
+# uploads (user content)
+public/uploads/*
+!public/uploads/.gitkeep
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# repo policy: no markdown / Cursor / docs in remote
+*.md
+.cursor/
+**/.cursor/
+.cursorrules
+.cursorignore
+docs/

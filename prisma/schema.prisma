@@ -1,0 +1,96 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  login     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id                       String      @id @default(cuid())
+  title                    String
+  description              String?     @db.Text
+  composition              String?     @db.Text
+  price                    Int
+  ozonUrl                  String?
+  badges                   String[]
+  images                   String[]
+  videoUrl                 String?
+  weight                   Int?
+  length                   Int?
+  width                    Int?
+  height                   Int?
+  cdekFulfillmentProductId String?
+  isActive                 Boolean     @default(true)
+  createdAt                DateTime    @default(now())
+  updatedAt                DateTime    @updatedAt
+  orderItems               OrderItem[]
+}
+
+model Order {
+  id                         String        @id @default(cuid())
+  orderNumber                Int           @unique @default(autoincrement())
+  status                     OrderStatus   @default(NEW)
+  paymentStatus              PaymentStatus @default(PENDING)
+  customerName               String
+  customerPhone              String
+  customerEmail              String
+  comment                    String?
+  deliveryType               DeliveryType
+  deliveryAddress            String?
+  cdekPvzCode                String?
+  cdekPvzAddress             String?
+  deliveryCost               Int
+  cdekFulfillmentOrderUuid   String?
+  cdekTrackNumber            String?
+  totalAmount                Int
+  yookassaId                 String?
+  paidAt                     DateTime?
+  items                      OrderItem[]
+  createdAt                  DateTime      @default(now())
+  updatedAt                  DateTime      @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Int
+}
+
+model Settings {
+  id               String  @id @default("main")
+  telegramChatId   String?
+  telegramBotToken String?
+}
+
+enum OrderStatus {
+  NEW
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+enum DeliveryType {
+  CDEK_PVZ
+  CDEK_DOOR
+}

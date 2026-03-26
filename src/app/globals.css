@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Tasty Coffee style palette */
+  --surface-page: #F4F4F4; /* Light grey background for the whole page */
+  --surface-card: #FFFFFF; /* Pure white for content cards */
+  --surface-alt: #F8F8F8;  /* Very light grey for image backgrounds/inputs */
+  --surface-dark: #1a1a1a; /* tailwind theme.surface.dark */
+  
+  --ink-dark: #111111;     /* Almost black for text and dark cards */
+  --ink: #111111;          /* алиас для tailwind colors.primary → var(--ink) */
+  --ink-inverse: #ffffff;
+  --ink-secondary: #666666; /* Grey text */
+  --ink-muted: #999999;
+
+  --line: #EAEAEA;
+  --line-light: #F2F2F2;
+
+  --brand-ozon: #005BFF;
+  /* Акценты магазина — фирменный синий Telegram */
+  --brand-blue: #0088cc;
+  --brand-blue-hover: #006699;
+  --brand-blue-light: #e8f4fb;
+
+  /* После brand-* — алиасы под tailwind theme.accent / primary */
+  --accent: var(--brand-blue);
+  --accent-dark: var(--brand-blue-hover);
+  --accent-light: var(--brand-blue-light);
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-body), system-ui, sans-serif;
+  background-color: var(--surface-card); /* Default white, we will override on cart page */
+  color: var(--ink-dark);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ink-muted);
+}
+
+/* Swiper overrides */
+.swiper-button-next,
+.swiper-button-prev {
+  color: var(--brand-blue) !important;
+  background: #ffffff;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.10);
+  transition: all 0.15s;
+}
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+  background: #ffffff;
+  border-color: rgba(0,136,204,0.35);
+  transform: scale(1.06);
+}
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  font-size: 12px !important;
+  font-weight: 900;
+}
+
+/* Высота цепочки Swiper — иначе fill-Image в слайде получает 0px и «пропадает» */
+/* overflow: visible — углы и обрезка берутся от родителя gallery-frame (overflow:hidden + border-radius) */
+.gallery-swiper.swiper {
+  height: 100%;
+  box-sizing: border-box;
+  overflow: visible;
+}
+.gallery-swiper .swiper-wrapper {
+  height: 100%;
+  box-sizing: border-box;
+}
+.gallery-swiper .swiper-slide {
+  height: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
