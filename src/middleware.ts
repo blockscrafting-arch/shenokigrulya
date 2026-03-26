@@ -19,6 +19,8 @@ export function middleware(request: NextRequest) {
     "default-src 'self'",
     // Яндекс.Карты требуют unsafe-eval; бандлы с yastatic.net (в т.ч. корень без субдомена)
     "script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net yastatic.net *.yastatic.net yandex.ru *.yandex.ru yandex.net *.yandex.net *.yandexcloud.net",
+    // Яндекс.Карты v3: Web Workers из blob/data — без worker-src fallback на script-src блокирует их
+    "worker-src 'self' blob: data:",
     "style-src 'self' 'unsafe-inline' yastatic.net *.yastatic.net yandex.ru *.yandex.ru yandex.net *.yandex.net cdn.jsdelivr.net",
     "img-src * data: blob:",
     "font-src 'self' data: yastatic.net *.yastatic.net yandex.ru *.yandex.ru yandex.net *.yandex.net",
