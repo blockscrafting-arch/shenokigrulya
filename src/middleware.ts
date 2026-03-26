@@ -14,16 +14,16 @@ export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
   // ─── Security Headers ────────────────────────────────────────────────────
-  // CSP: CDEK-виджет + Яндекс.Карты v3 (api-maps.yandex.ru, geocode-maps.yandex.ru — *.yandex.ru)
+  // CSP: CDEK-виджет + Яндекс.Карты v3. *.host не покрывает сам host — нужны yastatic.net, yandex.ru и т.д. явно
   const csp = [
     "default-src 'self'",
-    // Яндекс.Карты требует unsafe-eval; CDEK widget загружается с CDN
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net *.yandex.ru *.yandex.net *.yandexcloud.net *.yastatic.net",
-    "style-src 'self' 'unsafe-inline' *.yandex.ru *.yandex.net *.yastatic.net cdn.jsdelivr.net",
+    // Яндекс.Карты требуют unsafe-eval; бандлы с yastatic.net (в т.ч. корень без субдомена)
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net yastatic.net *.yastatic.net yandex.ru *.yandex.ru yandex.net *.yandex.net *.yandexcloud.net",
+    "style-src 'self' 'unsafe-inline' yastatic.net *.yastatic.net yandex.ru *.yandex.ru yandex.net *.yandex.net cdn.jsdelivr.net",
     "img-src * data: blob:",
-    "font-src 'self' data: *.yandex.ru *.yandex.net *.yastatic.net",
-    "connect-src 'self' api.cdek.ru *.yandex.ru *.yandex.net *.yastatic.net *.yandexcloud.net api.yookassa.ru",
-    "frame-src api.yookassa.ru *.yandex.ru *.yandex.net *.yandexcloud.net",
+    "font-src 'self' data: yastatic.net *.yastatic.net yandex.ru *.yandex.ru yandex.net *.yandex.net",
+    "connect-src 'self' api.cdek.ru yastatic.net *.yastatic.net yandex.ru *.yandex.ru yandex.net *.yandex.net *.yandexcloud.net api.yookassa.ru",
+    "frame-src api.yookassa.ru yandex.ru *.yandex.ru yandex.net *.yandex.net *.yandexcloud.net",
     "frame-ancestors 'none'",
     "object-src 'none'",
     "base-uri 'self'",
