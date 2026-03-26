@@ -28,11 +28,19 @@ export async function PATCH(
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
-  const body = await request.json();
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
   const parsed = updateOrderStatusSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
+
+  const existing = await prisma.order.findUnique({ where: { id } });
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const order = await prisma.order.update({
     where: { id },

@@ -12,7 +12,12 @@ function returnUrl(orderId: string): string {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json() as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
   const orderId = body.orderId as string | undefined;
   if (!orderId) return NextResponse.json({ error: "orderId required" }, { status: 400 });
 

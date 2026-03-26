@@ -6,8 +6,20 @@ import { mapCdekStatusToOrderStatus } from "@/lib/cdek";
  * Webhook СДЭК API v2 — приём уведомлений о смене статуса заказа.
  * Подписка: POST https://api.cdek.ru/v2/webhooks { url, type: "ORDER_STATUS" }
  * Документация: https://api-docs.cdek.ru (Webhooks)
+ *
+ * Аутентификация: shared secret в query string (?secret=...).
+ * Задать в env CDEK_WEBHOOK_SECRET. Без него эндпоинт открыт (только для dev).
  */
 export async function POST(request: Request) {
+  const webhookSecret = process.env.CDEK_WEBHOOK_SECRET;
+  if (webhookSecret) {
+    const { searchParams } = new URL(request.url);
+    const provided = searchParams.get("secret");
+    if (provided !== webhookSecret) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
   let body: {
     type?: string;
     uuid?: string;
@@ -38,20 +50,10 @@ export async function POST(request: Request) {
   if (!newStatus) return NextResponse.json({ ok: true });
 
   const order = await prisma.order.findFirst({
-    where: {
-      OR: [
-        { cdekTrackNumber: cdek_number },
-        { cdekFulfillmentOrderUuid: { not: null } },
-      ],
-    },
+    where: { cdekTrackNumber: cdek_number },
   });
 
-  if (!order) {
-    const orderByTrack = await prisma.order.findFirst({
-      where: { cdekTrackNumber: cdek_number },
-    });
-    if (!orderByTrack) return NextResponse.json({ ok: true });
-  }
+  if (!order) return NextResponse.json({ ok: true });
 
   await prisma.order.updateMany({
     where: { cdekTrackNumber: cdek_number },

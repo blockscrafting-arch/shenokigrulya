@@ -15,14 +15,19 @@ export async function POST(request: Request) {
   const admin = await getAdminFromRequest();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const body = await request.json();
+  let rawBody: Record<string, unknown>;
+  try {
+    rawBody = (await request.json()) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
   const parsed = createProductSchema.safeParse({
-    ...body,
-    price: typeof body.price === "number" ? body.price : body.price != null ? Number(body.price) : undefined,
-    weight: body.weight != null ? Number(body.weight) : null,
-    length: body.length != null ? Number(body.length) : null,
-    width: body.width != null ? Number(body.width) : null,
-    height: body.height != null ? Number(body.height) : null,
+    ...rawBody,
+    price: typeof rawBody.price === "number" ? rawBody.price : rawBody.price != null ? Number(rawBody.price) : undefined,
+    weight: rawBody.weight != null ? Number(rawBody.weight) : null,
+    length: rawBody.length != null ? Number(rawBody.length) : null,
+    width: rawBody.width != null ? Number(rawBody.width) : null,
+    height: rawBody.height != null ? Number(rawBody.height) : null,
   });
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });

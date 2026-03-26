@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { sendOrderNotification } from "@/lib/telegram";
 import { getPayment } from "@/lib/yookassa";
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  const { id: paymentId, status: claimedStatus } = body.object;
+  const { id: paymentId } = body.object;
   const payment = await getPayment(paymentId);
   if (!payment) {
     return NextResponse.json({ ok: true });
@@ -54,12 +55,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  const order = await prisma.order.findFirst({
-    where: { yookassaId: paymentId },
-    include: { items: { include: { product: true } } },
-  });
-  if (!order) return NextResponse.json({ ok: true });
-  if (order.paymentStatus === "PAID") return NextResponse.json({ ok: true });
+  // Блокировка через FOR UPDATE предотвращает двойное создание фулфилмента
+  // при повторных webhook-ах от ЮKassa (ретраи в течение 24 часов)
+  let order: Awaited<ReturnType<typeof prisma.order.findFirst>> & {
+    items: Array<{ product: { cdekFulfillmentProductId: string | null; title: string }; quantity: number; price: number; productId: string }>;
+  } | null = null;
+
+  let alreadyPaid = false;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.$queryRaw(Prisma.sql`SELECT id FROM "Order" WHERE "yookassaId" = ${paymentId} FOR UPDATE`);
+
+    const found = await tx.order.findFirst({
+      where: { yookassaId: paymentId },
+      include: { items: { include: { product: true } } },
+    });
+    if (!found) return;
+    if (found.paymentStatus === "PAID") {
+      alreadyPaid = true;
+      return;
+    }
+    order = found as typeof order;
+  }, { timeout: 15000 });
+
+  if (!order || alreadyPaid) return NextResponse.json({ ok: true });
 
   const ffItems = order.items
     .filter((i) => i.product.cdekFulfillmentProductId)

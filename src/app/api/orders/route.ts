@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getAdminFromRequest } from "@/lib/auth";
 import { createOrderSchema } from "@/lib/validators";
 import { sendOrderNotification } from "@/lib/telegram";
+import { calculateDelivery } from "@/lib/cdek";
 
 export async function GET(request: Request) {
   const admin = await getAdminFromRequest();
@@ -27,7 +28,12 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
   const parsed = createOrderSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
@@ -57,6 +63,31 @@ export async function POST(request: Request) {
 
   const totalAmount = itemsTotal + data.deliveryCost;
 
+  // Серверная верификация стоимости доставки через СДЭК API
+  // Если город доставки передан — пересчитываем и подставляем серверное значение
+  let verifiedDeliveryCost = data.deliveryCost;
+  const fromCityCode = process.env.CDEK_FROM_CITY_CODE ?? process.env.CDEK_FF_WAREHOUSE_CITY_CODE;
+  if (data.deliveryCityCode && fromCityCode) {
+    try {
+      const tariffCode = data.deliveryType === "CDEK_DOOR" ? 139 : 136;
+      const quote = await calculateDelivery({
+        fromLocation: fromCityCode,
+        toLocation: String(data.deliveryCityCode),
+        weight: 3000,
+        length: 370,
+        width: 130,
+        height: 230,
+        tariffCode,
+      });
+      verifiedDeliveryCost = quote.sum;
+    } catch {
+      // Если СДЭК API недоступен — принимаем клиентскую стоимость с предупреждением
+      console.warn("CDEK delivery cost verification failed — using client value:", data.deliveryCost);
+    }
+  }
+
+  const totalAmountFinal = itemsTotal + verifiedDeliveryCost;
+
   const order = await prisma.order.create({
     data: {
       customerName: data.customerName,
@@ -67,8 +98,8 @@ export async function POST(request: Request) {
       deliveryAddress: data.deliveryAddress ?? null,
       cdekPvzCode: data.cdekPvzCode ?? null,
       cdekPvzAddress: data.cdekPvzAddress ?? null,
-      deliveryCost: data.deliveryCost,
-      totalAmount,
+      deliveryCost: verifiedDeliveryCost,
+      totalAmount: totalAmountFinal,
       items: {
         create: orderItems.map((item) => ({
           productId: item.productId,

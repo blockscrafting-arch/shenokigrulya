@@ -28,12 +28,21 @@ export async function createPayment(params: CreatePaymentParams): Promise<{ conf
   const receiptItems = [
     ...params.items.map((item) => ({
       description: item.title,
-      quantity: item.quantity.toString(),
+      quantity: item.quantity,
       amount: { value: (item.price / 100).toFixed(2), currency: "RUB" },
       vat_code: 1,
+      payment_subject: "commodity",
+      payment_mode: "full_prepayment",
     })),
     ...(params.deliveryCost > 0
-      ? [{ description: "Доставка", quantity: "1", amount: { value: (params.deliveryCost / 100).toFixed(2), currency: "RUB" }, vat_code: 1 }]
+      ? [{
+          description: "Доставка",
+          quantity: 1,
+          amount: { value: (params.deliveryCost / 100).toFixed(2), currency: "RUB" },
+          vat_code: 1,
+          payment_subject: "service",
+          payment_mode: "full_prepayment",
+        }]
       : []),
   ];
 

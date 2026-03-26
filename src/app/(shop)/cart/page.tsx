@@ -68,6 +68,7 @@ export default function CartPage() {
             null,
           cdekPvzCode: deliveryChoice?.cdekPvzCode ?? null,
           cdekPvzAddress: deliveryChoice?.cdekPvzAddress ?? null,
+          deliveryCityCode: deliveryChoice?.deliveryCityCode ?? undefined,
           deliveryCost,
           items: items
             .filter((i) => i.quantity > 0)
@@ -277,7 +278,7 @@ export default function CartPage() {
               Получатель
             </h2>
 
-            {error && !deliveryChoice && (
+            {error && (
               <div className="mb-6 rounded-xl bg-red-50 p-4 text-sm font-bold text-red-600 uppercase tracking-wide">
                 {error}
               </div>

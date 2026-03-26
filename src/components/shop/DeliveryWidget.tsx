@@ -10,6 +10,7 @@ const WIDGET_ROOT_ID = "cdek-widget-root";
 export interface DeliveryChoice {
   deliveryType: "CDEK_PVZ" | "CDEK_DOOR";
   deliveryCost: number;
+  deliveryCityCode: number | null;
   cdekPvzCode: string | null;
   cdekPvzAddress: string | null;
   deliveryAddress: string | null;
@@ -81,9 +82,13 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
           address: Record<string, unknown>,
         ) => {
           const deliveryCostKopecks = Math.round((tariff?.delivery_sum ?? 0) * 100);
+          // Извлекаем city_code из ответа виджета для серверной верификации стоимости
+          const rawCityCode = (address?.city_code ?? address?.cityCode) as number | string | null | undefined;
+          const deliveryCityCode = rawCityCode != null ? Number(rawCityCode) : null;
           const choice: DeliveryChoice = {
             deliveryType: mode === "door" ? "CDEK_DOOR" : "CDEK_PVZ",
             deliveryCost: deliveryCostKopecks,
+            deliveryCityCode: deliveryCityCode && !isNaN(deliveryCityCode) ? deliveryCityCode : null,
             // office: address.code (строка кода ПВЗ), address.address (адрес ПВЗ)
             cdekPvzCode:
               mode === "office" && address?.code != null ? String(address.code) : null,

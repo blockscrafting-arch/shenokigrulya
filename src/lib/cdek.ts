@@ -38,6 +38,7 @@ export interface CalculateDeliveryParams {
   length: number;
   width: number;
   height: number;
+  tariffCode?: number;
 }
 
 export interface DeliveryQuote {
@@ -65,7 +66,7 @@ export async function calculateDelivery(params: CalculateDeliveryParams): Promis
           height: params.height / 10,
         },
       ],
-      tariff_code: 139,
+      tariff_code: params.tariffCode ?? 139,
     }),
   });
   if (!res.ok) {

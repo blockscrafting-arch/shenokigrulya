@@ -31,14 +31,15 @@ export const orderItemSchema = z.object({
 });
 
 export const createOrderSchema = z.object({
-  customerName: z.string().min(1, "Укажите ФИО"),
-  customerPhone: z.string().min(10, "Укажите телефон"),
-  customerEmail: z.string().email("Некорректный email"),
-  comment: z.string().optional(),
+  customerName: z.string().min(1, "Укажите ФИО").max(200),
+  customerPhone: z.string().min(10, "Укажите телефон").max(20).regex(/^\+?[0-9\s\-()+]{10,20}$/, "Некорректный телефон"),
+  customerEmail: z.string().email("Некорректный email").max(254),
+  comment: z.string().max(1000).optional(),
   deliveryType: z.enum(["CDEK_PVZ", "CDEK_DOOR"]),
-  deliveryAddress: z.string().optional(),
-  cdekPvzCode: z.string().optional(),
-  cdekPvzAddress: z.string().optional(),
+  deliveryAddress: z.string().max(500).optional(),
+  cdekPvzCode: z.string().max(50).optional(),
+  cdekPvzAddress: z.string().max(500).optional(),
+  deliveryCityCode: z.number().int().min(1).optional(),
   deliveryCost: z.number().int().min(0),
   items: z.array(orderItemSchema).min(1, "Добавьте товары"),
 });

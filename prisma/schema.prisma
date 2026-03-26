@@ -52,11 +52,15 @@ model Order {
   cdekFulfillmentOrderUuid   String?
   cdekTrackNumber            String?
   totalAmount                Int
-  yookassaId                 String?
+  yookassaId                 String?       @unique
   paidAt                     DateTime?
   items                      OrderItem[]
   createdAt                  DateTime      @default(now())
   updatedAt                  DateTime      @updatedAt
+
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([cdekTrackNumber])
 }
 
 model OrderItem {
@@ -64,9 +68,12 @@ model OrderItem {
   orderId   String
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String
-  product   Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
   quantity  Int
   price     Int
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 model Settings {
