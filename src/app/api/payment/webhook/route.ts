@@ -57,28 +57,21 @@ export async function POST(request: Request) {
 
   // Блокировка через FOR UPDATE предотвращает двойное создание фулфилмента
   // при повторных webhook-ах от ЮKassa (ретраи в течение 24 часов)
-  let order: Awaited<ReturnType<typeof prisma.order.findFirst>> & {
-    items: Array<{ product: { cdekFulfillmentProductId: string | null; title: string }; quantity: number; price: number; productId: string }>;
-  } | null = null;
-
-  let alreadyPaid = false;
-
-  await prisma.$transaction(async (tx) => {
+  const txResult = await prisma.$transaction(async (tx) => {
     await tx.$queryRaw(Prisma.sql`SELECT id FROM "Order" WHERE "yookassaId" = ${paymentId} FOR UPDATE`);
 
     const found = await tx.order.findFirst({
       where: { yookassaId: paymentId },
       include: { items: { include: { product: true } } },
     });
-    if (!found) return;
-    if (found.paymentStatus === "PAID") {
-      alreadyPaid = true;
-      return;
-    }
-    order = found as typeof order;
+    if (!found) return { status: "not_found" as const };
+    if (found.paymentStatus === "PAID") return { status: "already_paid" as const };
+    return { status: "ok" as const, order: found };
   }, { timeout: 15000 });
 
-  if (!order || alreadyPaid) return NextResponse.json({ ok: true });
+  if (txResult.status !== "ok") return NextResponse.json({ ok: true });
+
+  const { order } = txResult;
 
   const ffItems = order.items
     .filter((i) => i.product.cdekFulfillmentProductId)
