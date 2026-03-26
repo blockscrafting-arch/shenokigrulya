@@ -115,14 +115,14 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
         strategy="afterInteractive"
         onLoad={() => initWidget()}
       />
-      {/* Контейнер виджета: по документации минимальная ширина 800px, высота задана явно */}
+      {/* Контейнер виджета: по документации ширина >= 800px, высота >= 600px — явная, не minHeight */}
       <div className="overflow-x-auto rounded-2xl border border-black/[0.08] bg-white">
         <p className="px-4 pt-4 pb-3 text-[13px] font-medium text-ink-muted">
           Выберите пункт выдачи или доставку курьером. Стоимость рассчитается автоматически.
         </p>
         <div
           id={WIDGET_ROOT_ID}
-          style={{ minWidth: 800, minHeight: 520 }}
+          style={{ width: "100%", minWidth: 800, height: 600 }}
         />
       </div>
     </>
