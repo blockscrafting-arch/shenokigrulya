@@ -50,7 +50,7 @@ export default function CartPage() {
 
   // Фоновый пересчёт стоимости доставки при изменении корзины (дебаунс 600 мс)
   useEffect(() => {
-    if (!deliveryChoice?.deliveryCityCode) return;
+    if (!deliveryChoice?.deliveryCityCode || !deliveryChoice?.tariffCode) return;
     if (recalcTimerRef.current) clearTimeout(recalcTimerRef.current);
     recalcTimerRef.current = setTimeout(async () => {
       setRecalculating(true);
@@ -60,7 +60,7 @@ export default function CartPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             deliveryCityCode: deliveryChoice.deliveryCityCode,
-            deliveryType: deliveryChoice.deliveryType,
+            tariffCode: deliveryChoice.tariffCode,
             goods,
           }),
         });

@@ -11,7 +11,7 @@ const GoodSchema = z.object({
 
 const RequestSchema = z.object({
   deliveryCityCode: z.number().int().positive(),
-  deliveryType: z.enum(["CDEK_PVZ", "CDEK_DOOR"]),
+  tariffCode: z.number().int().positive(),
   goods: z.array(GoodSchema).min(1),
 });
 
@@ -28,8 +28,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
   }
 
-  const { deliveryCityCode, deliveryType, goods } = parsed.data;
-  const tariffCode = deliveryType === "CDEK_DOOR" ? 139 : 136;
+  const { deliveryCityCode, tariffCode, goods } = parsed.data;
 
   const totalWeight = goods.reduce((acc, g) => acc + g.weight, 0);
   const maxLength = Math.max(...goods.map((g) => g.length));
