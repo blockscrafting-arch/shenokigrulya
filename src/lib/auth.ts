@@ -51,8 +51,3 @@ export async function getAdminFromRequest(): Promise<{ adminId: string; login: s
   if (!token) return null;
   return verifyToken(token);
 }
-
-export function getTokenFromHeader(authHeader: string | null): string | null {
-  if (!authHeader?.startsWith("Bearer ")) return null;
-  return authHeader.slice(7);
-}

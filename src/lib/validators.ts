@@ -40,6 +40,7 @@ export const createOrderSchema = z.object({
   cdekPvzCode: z.string().max(50).optional(),
   cdekPvzAddress: z.string().max(500).optional(),
   deliveryCityCode: z.number().int().min(1).optional(),
+  tariffCode: z.number().int().positive().optional(),
   deliveryCost: z.number().int().min(0),
   items: z.array(orderItemSchema).min(1, "Добавьте товары"),
 });

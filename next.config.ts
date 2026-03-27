@@ -2,7 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    remotePatterns: [{ protocol: "https", hostname: "**" }, { protocol: "http", hostname: "localhost", pathname: "/**" }],
+    remotePatterns: [
+      // Продакшен-домен (статика товаров)
+      { protocol: "https", hostname: "puppyigrulya.ru", pathname: "/**" },
+      // Локальная разработка
+      { protocol: "http", hostname: "localhost", pathname: "/**" },
+    ],
   },
 };
 

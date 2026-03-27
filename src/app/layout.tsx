@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Nunito, Oswald } from "next/font/google";
+import { Inter, Nunito } from "next/font/google";
 import localFont from "next/font/local";
 import { CartProvider } from "@/hooks/useCart";
 import { FigmaCaptureScript } from "@/components/FigmaCaptureScript";
@@ -19,13 +19,6 @@ const bebasNeue = localFont({
   display: "swap",
 });
 
-const oswald = Oswald({
-  subsets: ["latin", "cyrillic"],
-  variable: "--font-subheading",
-  weight: ["700"],
-  display: "swap",
-});
-
 /** Nunito — ближайший свободный аналог фирменного шрифта Ozon (округлый, жирный) */
 const nunito = Nunito({
   subsets: ["latin"],
@@ -34,7 +27,7 @@ const nunito = Nunito({
   display: "swap",
 });
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://igrulya.ru";
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://puppyigrulya.ru";
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
@@ -73,7 +66,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-      <html lang="ru" className={`${inter.variable} ${bebasNeue.variable} ${nunito.variable} ${oswald.variable}`}>
+      <html lang="ru" className={`${inter.variable} ${bebasNeue.variable} ${nunito.variable}`}>
       <body className="min-h-screen antialiased font-body bg-white text-ink">
         {process.env.NODE_ENV === "development" && <FigmaCaptureScript />}
         <CartProvider>{children}</CartProvider>

@@ -5,7 +5,7 @@ import { ProductInfo } from "@/components/shop/ProductInfo";
 
 export const dynamic = "force-dynamic";
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://igrulya.ru";
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://puppyigrulya.ru";
 
 export async function generateMetadata(): Promise<Metadata> {
   const product = await prisma.product.findFirst({

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAdminFromRequest } from "@/lib/auth";
 import { createOrderSchema } from "@/lib/validators";
-import { sendOrderNotification } from "@/lib/telegram";
 import { calculateDelivery } from "@/lib/cdek";
 
 export async function GET(request: Request) {
@@ -61,15 +60,13 @@ export async function POST(request: Request) {
     itemsTotal += price * item.quantity;
   }
 
-  const totalAmount = itemsTotal + data.deliveryCost;
-
   // Серверная верификация стоимости доставки через СДЭК API
   // Если город доставки передан — пересчитываем и подставляем серверное значение
   let verifiedDeliveryCost = data.deliveryCost;
   const fromCityCode = process.env.CDEK_FROM_CITY_CODE ?? process.env.CDEK_FF_WAREHOUSE_CITY_CODE;
   if (data.deliveryCityCode && fromCityCode) {
     try {
-      const tariffCode = data.deliveryType === "CDEK_DOOR" ? 139 : 136;
+      const tariffCode = data.tariffCode ?? (data.deliveryType === "CDEK_DOOR" ? 139 : 136);
       // Суммарный вес заказа — из реальных данных товаров в БД, fallback 3000г на позицию
       const totalWeightG = orderItems.reduce((sum, item) => {
         const product = productMap.get(item.productId);

@@ -18,7 +18,9 @@ export default function Error({
       <h1 className="mb-4 font-heading text-2xl font-bold text-ink">
         Что-то пошло не так
       </h1>
-      <p className="mb-6 text-ink-secondary">{error.message}</p>
+      <p className="mb-6 text-ink-secondary">
+        Произошла ошибка. Попробуйте обновить страницу.
+      </p>
       <button
         type="button"
         onClick={reset}

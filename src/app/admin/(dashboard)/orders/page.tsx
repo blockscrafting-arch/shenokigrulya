@@ -2,12 +2,28 @@ import { prisma } from "@/lib/prisma";
 import { formatPrice, formatDate } from "@/lib/utils";
 import Link from "next/link";
 
-export default async function AdminOrdersPage() {
-  const orders = await prisma.order.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 50,
-    include: { items: true },
-  });
+const PAGE_SIZE = 30;
+
+export default async function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ page?: string }>;
+}) {
+  const { page: pageParam } = await searchParams;
+  const page = Math.max(1, Number(pageParam) || 1);
+  const skip = (page - 1) * PAGE_SIZE;
+
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: PAGE_SIZE,
+      include: { items: true },
+    }),
+    prisma.order.count(),
+  ]);
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
     <div className="space-y-6">
@@ -47,6 +63,33 @@ export default async function AdminOrdersPage() {
           <p className="p-8 text-center text-text-muted">Заказов пока нет</p>
         )}
       </div>
+
+      {/* Пагинация */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-text-muted">
+            Стр. {page} из {totalPages} · всего {total} заказов
+          </span>
+          <div className="flex gap-2">
+            {page > 1 && (
+              <Link
+                href={`/admin/orders?page=${page - 1}`}
+                className="rounded-lg border border-black/10 px-3 py-1.5 hover:bg-black/5"
+              >
+                ← Назад
+              </Link>
+            )}
+            {page < totalPages && (
+              <Link
+                href={`/admin/orders?page=${page + 1}`}
+                className="rounded-lg border border-black/10 px-3 py-1.5 hover:bg-black/5"
+              >
+                Вперёд →
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

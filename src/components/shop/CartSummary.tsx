@@ -1,4 +1,6 @@
 "use client";
+// NOTE: компонент не используется в текущем UI (вытеснен инлайн-версткой в cart/page.tsx)
+// Зарезервирован на случай возврата к отдельной странице корзины.
 
 import Link from "next/link";
 import { useCart } from "@/hooks/useCart";

@@ -133,6 +133,7 @@ export default function CartPage() {
           cdekPvzCode: deliveryChoice?.cdekPvzCode ?? null,
           cdekPvzAddress: deliveryChoice?.cdekPvzAddress ?? null,
           deliveryCityCode: deliveryChoice?.deliveryCityCode ?? undefined,
+          tariffCode: deliveryChoice?.tariffCode ?? undefined,
           deliveryCost,
           items: items
             .filter((i) => i.quantity > 0)
@@ -242,7 +243,9 @@ export default function CartPage() {
               </div>
               <button
                 type="button"
-                onClick={clearCart}
+                onClick={() => {
+                  if (window.confirm("Очистить всю корзину?")) clearCart();
+                }}
                 className="flex items-center gap-2 text-[14px] font-bold text-ink-secondary hover:text-red-500 transition-colors"
               >
                 Очистить корзину
@@ -298,7 +301,7 @@ export default function CartPage() {
 
                     {/* Вес */}
                     <span className="self-start rounded-lg bg-[#F2F2F2] px-2.5 py-1 text-[12px] font-bold text-ink-secondary uppercase tracking-wide">
-                      3 кг
+                      {item.weight ? `${(item.weight / 1000).toFixed(item.weight % 1000 === 0 ? 0 : 1)} кг` : "3 кг"}
                     </span>
 
                     {/* Количество + итоговая цена */}
@@ -476,7 +479,14 @@ export default function CartPage() {
             </button>
 
             <p className="mt-6 text-[12px] font-medium text-white/40 leading-relaxed max-w-[280px]">
-              Согласен с условиями обработки данных, пользовательского соглашения и оферты
+              Согласен с{" "}
+              <Link href="/privacy" className="underline underline-offset-2 hover:text-white/70 transition-colors">
+                политикой обработки данных
+              </Link>{" "}
+              и{" "}
+              <Link href="/offer" className="underline underline-offset-2 hover:text-white/70 transition-colors">
+                публичной офертой
+              </Link>
             </p>
           </div>
         </div>

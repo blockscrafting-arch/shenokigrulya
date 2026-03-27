@@ -28,6 +28,8 @@
   --accent: var(--brand-blue);
   --accent-dark: var(--brand-blue-hover);
   --accent-light: var(--brand-blue-light);
+  /* --font-subheading переопределён через Inter (Oswald удалён) */
+  --font-subheading: var(--font-body);
 }
 
 html {

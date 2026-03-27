@@ -1,4 +1,6 @@
 "use client";
+// NOTE: компонент не используется (вытеснен CompositionBlock внутри ProductInfo.tsx).
+// Зарезервирован как альтернативный вариант разворачиваемого состава.
 
 import { useState } from "react";
 import { FadeIn } from "./FadeIn";

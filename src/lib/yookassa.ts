@@ -23,7 +23,7 @@ export interface CreatePaymentParams {
 }
 
 export async function createPayment(params: CreatePaymentParams): Promise<{ confirmationUrl: string; paymentId: string }> {
-  const idempotenceKey = crypto.randomUUID();
+  const idempotenceKey = `pay-${params.orderId}`;
 
   const receiptItems = [
     ...params.items.map((item) => ({

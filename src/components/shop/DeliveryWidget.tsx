@@ -120,7 +120,11 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
             cdekPvzAddress:
               mode === "office" && address?.address != null ? String(address.address) : null,
             deliveryAddress:
-              mode === "door" && address?.formatted != null ? String(address.formatted) : null,
+              mode === "door" && address?.name != null
+                ? String(address.name)
+                : mode === "door" && address?.formatted != null
+                  ? String(address.formatted)
+                  : null,
             periodMin: tariff?.period_min,
             periodMax: tariff?.period_max,
           };
@@ -163,6 +167,9 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
           id={WIDGET_ROOT_ID}
           style={{ width: "100%", minWidth: 800, height: 600 }}
         />
+        <p className="block px-4 pb-3 text-[12px] text-ink-muted sm:hidden">
+          ← Листайте карту влево/вправо для выбора пункта выдачи
+        </p>
       </div>
     </>
   );

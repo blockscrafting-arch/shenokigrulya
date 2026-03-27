@@ -3,8 +3,10 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+const SEED_DEFAULT_PASSWORD = "admin123";
+
 async function main() {
-  const adminPassword = await bcrypt.hash("admin123", 12);
+  const adminPassword = await bcrypt.hash(SEED_DEFAULT_PASSWORD, 12);
   await prisma.admin.upsert({
     where: { login: "admin" },
     update: {},
@@ -13,6 +15,14 @@ async function main() {
       password: adminPassword,
     },
   });
+
+  // ВАЖНО: после seed обязательно смените пароль через /admin/settings!
+  // Пароль по умолчанию "admin123" — небезопасен для продакшена.
+  console.warn(
+    "⚠️  SEED DEFAULT PASSWORD:",
+    SEED_DEFAULT_PASSWORD,
+    "— смените через /admin/settings перед запуском в продакшене!"
+  );
 
   await prisma.settings.upsert({
     where: { id: "main" },
@@ -63,7 +73,7 @@ async function main() {
     },
   });
 
-  console.log("Seed: admin (admin / admin123), settings, product", product.id);
+  console.log(`Seed: admin (admin / ${SEED_DEFAULT_PASSWORD}), settings, product`, product.id);
 }
 
 main()
