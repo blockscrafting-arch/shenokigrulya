@@ -1,0 +1,59 @@
+import { NextRequest, NextResponse } from "next/server";
+import { calculateDelivery } from "@/lib/cdek";
+import { z } from "zod";
+
+const GoodSchema = z.object({
+  weight: z.number().positive(),
+  length: z.number().positive(),
+  width: z.number().positive(),
+  height: z.number().positive(),
+});
+
+const RequestSchema = z.object({
+  deliveryCityCode: z.number().int().positive(),
+  tariffCode: z.number().int().positive(),
+  goods: z.array(GoodSchema).min(1),
+});
+
+export async function POST(req: NextRequest) {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const parsed = RequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
+
+  const { deliveryCityCode, tariffCode, goods } = parsed.data;
+
+  const totalWeight = goods.reduce((acc, g) => acc + g.weight, 0);
+  const maxLength = Math.max(...goods.map((g) => g.length));
+  const maxWidth = Math.max(...goods.map((g) => g.width));
+  const maxHeight = Math.max(...goods.map((g) => g.height));
+
+  const fromCityCode = process.env.CDEK_FROM_CITY_CODE ?? "44";
+
+  try {
+    const quote = await calculateDelivery({
+      fromLocation: fromCityCode,
+      toLocation: String(deliveryCityCode),
+      weight: totalWeight,
+      length: maxLength,
+      width: maxWidth,
+      height: maxHeight,
+      tariffCode,
+    });
+    return NextResponse.json({
+      deliveryCost: quote.sum,
+      periodMin: quote.deliveryMin,
+      periodMax: quote.deliveryMax,
+    });
+  } catch (err) {
+    console.warn("[delivery/price] CDEK error:", err);
+    return NextResponse.json({ error: "CDEK unavailable" }, { status: 502 });
+  }
+}

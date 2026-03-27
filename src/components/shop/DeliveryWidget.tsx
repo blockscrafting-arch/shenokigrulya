@@ -13,6 +13,7 @@ export interface DeliveryChoice {
   deliveryType: "CDEK_PVZ" | "CDEK_DOOR";
   deliveryCost: number;
   deliveryCityCode: number | null;
+  tariffCode: number | null;
   cdekPvzCode: string | null;
   cdekPvzAddress: string | null;
   deliveryAddress: string | null;
@@ -106,6 +107,7 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
             deliveryType: mode === "door" ? "CDEK_DOOR" : "CDEK_PVZ",
             deliveryCost: deliveryCostKopecks,
             deliveryCityCode: deliveryCityCode && !isNaN(deliveryCityCode) ? deliveryCityCode : null,
+            tariffCode: tariff?.tariff_code ?? null,
             cdekPvzCode:
               mode === "office" && address?.code != null ? String(address.code) : null,
             cdekPvzAddress:

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
@@ -18,7 +18,9 @@ export default function CartPage() {
   const [deliveryChoice, setDeliveryChoice] =
     useState<DeliveryChoice | null>(null);
   const [loading, setLoading] = useState(false);
+  const [recalculating, setRecalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const recalcTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     customerName: "",
@@ -45,6 +47,51 @@ export default function CartPage() {
       }))
     );
   }, [items]);
+
+  // Фоновый пересчёт стоимости доставки при изменении корзины (дебаунс 600 мс)
+  useEffect(() => {
+    if (!deliveryChoice?.deliveryCityCode || !deliveryChoice?.tariffCode) return;
+    if (recalcTimerRef.current) clearTimeout(recalcTimerRef.current);
+    recalcTimerRef.current = setTimeout(async () => {
+      setRecalculating(true);
+      try {
+        const res = await fetch("/api/delivery/price", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            deliveryCityCode: deliveryChoice.deliveryCityCode,
+            tariffCode: deliveryChoice.tariffCode,
+            goods,
+          }),
+        });
+        if (res.ok) {
+          const data = (await res.json()) as {
+            deliveryCost: number;
+            periodMin: number;
+            periodMax: number;
+          };
+          setDeliveryChoice((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  deliveryCost: data.deliveryCost,
+                  periodMin: data.periodMin,
+                  periodMax: data.periodMax,
+                }
+              : prev
+          );
+        }
+      } catch {
+        // тихая ошибка — оставляем старое значение
+      } finally {
+        setRecalculating(false);
+      }
+    }, 600);
+    return () => {
+      if (recalcTimerRef.current) clearTimeout(recalcTimerRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goods]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -392,9 +439,11 @@ export default function CartPage() {
                 <div className="flex-1 border-b border-dotted border-white/20" />
                 <span className={`font-bold whitespace-nowrap ${!deliveryChoice ? "text-white/40 italic text-[13px]" : ""}`}>
                   {deliveryChoice
-                    ? deliveryCost > 0
-                      ? formatPrice(deliveryCost)
-                      : "0 ₽"
+                    ? recalculating
+                      ? <span className="opacity-60 text-[13px]">пересчёт…</span>
+                      : deliveryCost > 0
+                        ? formatPrice(deliveryCost)
+                        : "0 ₽"
                     : "не выбрана"}
                 </span>
               </div>
