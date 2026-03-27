@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
@@ -21,6 +21,14 @@ export default function CartPage() {
   const [recalculating, setRecalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const recalcTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastKnownCityCodeRef = useRef<number | null>(null);
+
+  const handleDeliveryChoose = useCallback((choice: DeliveryChoice) => {
+    if (choice.deliveryCityCode != null) {
+      lastKnownCityCodeRef.current = choice.deliveryCityCode;
+    }
+    setDeliveryChoice(choice);
+  }, []);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     customerName: "",
@@ -50,7 +58,8 @@ export default function CartPage() {
 
   // Фоновый пересчёт стоимости доставки при изменении корзины (дебаунс 600 мс)
   useEffect(() => {
-    if (!deliveryChoice?.deliveryCityCode || !deliveryChoice?.tariffCode) return;
+    const cityCode = deliveryChoice?.deliveryCityCode ?? lastKnownCityCodeRef.current;
+    if (!cityCode || !deliveryChoice?.tariffCode) return;
     if (recalcTimerRef.current) clearTimeout(recalcTimerRef.current);
     recalcTimerRef.current = setTimeout(async () => {
       setRecalculating(true);
@@ -59,7 +68,7 @@ export default function CartPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            deliveryCityCode: deliveryChoice.deliveryCityCode,
+            deliveryCityCode: cityCode,
             tariffCode: deliveryChoice.tariffCode,
             goods,
           }),
@@ -482,7 +491,7 @@ export default function CartPage() {
           fromCity={fromCity}
           goods={goods}
           yandexMapsApiKey={yandexKey}
-          onChoose={setDeliveryChoice}
+          onChoose={handleDeliveryChoose}
         />
         {deliveryChoice && (
           <div className="mt-6 flex items-center gap-3 rounded-xl bg-green-50 p-4">

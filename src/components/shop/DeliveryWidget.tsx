@@ -67,6 +67,7 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
   goodsRef.current = goods;
 
   const widgetRef = useRef<CDEKWidgetInstance | null>(null);
+  const lastCityCodeRef = useRef<number | null>(null);
 
   const initWidget = useCallback(() => {
     if (typeof window === "undefined" || !window.CDEKWidget) return;
@@ -89,6 +90,12 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
         lang: "rus",
         currency: "RUB",
         tariffs: { office: [136, 138, 234], door: [137, 139, 233] },
+        onCalculate: (
+          _prices: unknown,
+          address: { code?: number; address?: string },
+        ) => {
+          if (address?.code) lastCityCodeRef.current = address.code;
+        },
         onChoose: (
           mode: string,
           tariff: {
@@ -101,7 +108,7 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
           address: Record<string, unknown>,
         ) => {
           const deliveryCostKopecks = Math.round((tariff?.delivery_sum ?? 0) * 100);
-          const rawCityCode = (address?.city_code ?? address?.cityCode) as number | string | null | undefined;
+          const rawCityCode = (address?.city_code ?? address?.cityCode ?? lastCityCodeRef.current) as number | string | null | undefined;
           const deliveryCityCode = rawCityCode != null ? Number(rawCityCode) : null;
           const choice: DeliveryChoice = {
             deliveryType: mode === "door" ? "CDEK_DOOR" : "CDEK_PVZ",
