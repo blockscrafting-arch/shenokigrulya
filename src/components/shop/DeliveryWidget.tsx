@@ -7,6 +7,8 @@ import { useEffect, useRef, useCallback } from "react";
 const WIDGET_SCRIPT = "https://cdn.jsdelivr.net/npm/@cdek-it/widget@3.11.1/dist/cdek-widget.umd.js";
 const WIDGET_ROOT_ID = "cdek-widget-root";
 
+const DEFAULT_PARCEL = { weight: 4000, width: 13, height: 23, length: 37 };
+
 export interface DeliveryChoice {
   deliveryType: "CDEK_PVZ" | "CDEK_DOOR";
   deliveryCost: number;
@@ -29,9 +31,30 @@ interface DeliveryWidgetProps {
   yandexMapsApiKey: string;
 }
 
+/** iParcel для CDEK: width, height, length (см), weight (г) */
+function buildParcelsFromGoods(goods: DeliveryWidgetProps["goods"]) {
+  return goods.length
+    ? goods.map((g) => ({
+        weight: g.weight,
+        width: g.width,
+        height: g.height,
+        length: g.length,
+      }))
+    : [DEFAULT_PARCEL];
+}
+
+/** Инстанс виджета: wiki — resetParcels / addParcel без полного реиници (destroy() багованный, не использовать) */
+interface CDEKWidgetInstance {
+  open?: () => void;
+  close?: () => void;
+  addParcel: (parcel: unknown | unknown[]) => void;
+  resetParcels: () => void;
+  getParcels?: () => unknown[];
+}
+
 declare global {
   interface Window {
-    CDEKWidget?: new (config: Record<string, unknown>) => { open?: () => void; close?: () => void };
+    CDEKWidget?: new (config: Record<string, unknown>) => CDEKWidgetInstance;
   }
 }
 
@@ -39,23 +62,22 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
   const onChooseRef = useRef(onChoose);
   onChooseRef.current = onChoose;
 
+  const goodsRef = useRef(goods);
+  goodsRef.current = goods;
+
+  const widgetRef = useRef<CDEKWidgetInstance | null>(null);
+
   const initWidget = useCallback(() => {
     if (typeof window === "undefined" || !window.CDEKWidget) return;
-    const root = document.getElementById(WIDGET_ROOT_ID);
-    if (!root || root.hasAttribute("data-cdek-inited")) return;
+    if (widgetRef.current) return;
 
-    // iParcell: { width, height, length (см), weight (г) } — по документации виджета
-    const parcels = goods.length
-      ? goods.map((g) => ({
-          weight: g.weight,
-          width: g.width,    // ширина
-          height: g.height,  // высота
-          length: g.length,  // длина (ранее width и length были перепутаны)
-        }))
-      : [{ weight: 4000, width: 13, height: 23, length: 37 }];
+    const root = document.getElementById(WIDGET_ROOT_ID);
+    if (!root) return;
+
+    const parcels = buildParcelsFromGoods(goodsRef.current);
 
     try {
-      new window.CDEKWidget!({
+      widgetRef.current = new window.CDEKWidget!({
         from: fromCity,
         root: WIDGET_ROOT_ID,
         apiKey: yandexMapsApiKey,
@@ -66,10 +88,6 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
         lang: "rus",
         currency: "RUB",
         tariffs: { office: [136, 138, 234], door: [137, 139, 233] },
-        // onChoose(mode, tariff, address) — по документации:
-        // mode: "office" (ПВЗ) | "door" (до двери)
-        // tariff.delivery_sum — стоимость в рублях (дробное число)
-        // Цены в системе хранятся в копейках → умножаем на 100
         onChoose: (
           mode: string,
           tariff: {
@@ -82,19 +100,16 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
           address: Record<string, unknown>,
         ) => {
           const deliveryCostKopecks = Math.round((tariff?.delivery_sum ?? 0) * 100);
-          // Извлекаем city_code из ответа виджета для серверной верификации стоимости
           const rawCityCode = (address?.city_code ?? address?.cityCode) as number | string | null | undefined;
           const deliveryCityCode = rawCityCode != null ? Number(rawCityCode) : null;
           const choice: DeliveryChoice = {
             deliveryType: mode === "door" ? "CDEK_DOOR" : "CDEK_PVZ",
             deliveryCost: deliveryCostKopecks,
             deliveryCityCode: deliveryCityCode && !isNaN(deliveryCityCode) ? deliveryCityCode : null,
-            // office: address.code (строка кода ПВЗ), address.address (адрес ПВЗ)
             cdekPvzCode:
               mode === "office" && address?.code != null ? String(address.code) : null,
             cdekPvzAddress:
               mode === "office" && address?.address != null ? String(address.address) : null,
-            // door: address.formatted (читаемый адрес), address.city, address.postal_code
             deliveryAddress:
               mode === "door" && address?.formatted != null ? String(address.formatted) : null,
             periodMin: tariff?.period_min,
@@ -103,22 +118,26 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
           onChooseRef.current(choice);
         },
       });
-      root.setAttribute("data-cdek-inited", "true");
     } catch (e) {
       console.error("CDEK widget init error:", e);
     }
-  }, [fromCity, goods]);
+  }, [fromCity, yandexMapsApiKey]);
 
   useEffect(() => {
-    // При смене goods (количества/параметров посылок) сбрасываем виджет
-    // чтобы он переинициализировался с актуальными данными
-    const root = document.getElementById(WIDGET_ROOT_ID);
-    if (root) {
-      root.removeAttribute("data-cdek-inited");
-      root.innerHTML = "";
-    }
     if (window.CDEKWidget) initWidget();
   }, [initWidget]);
+
+  useEffect(() => {
+    const w = widgetRef.current;
+    if (!w || typeof w.resetParcels !== "function" || typeof w.addParcel !== "function") return;
+    const parcels = buildParcelsFromGoods(goods);
+    try {
+      w.resetParcels();
+      w.addParcel(parcels);
+    } catch (e) {
+      console.error("CDEK widget parcels update error:", e);
+    }
+  }, [goods]);
 
   return (
     <>
@@ -127,7 +146,6 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
         strategy="afterInteractive"
         onLoad={() => initWidget()}
       />
-      {/* Контейнер виджета: по документации ширина >= 800px, высота >= 600px — явная, не minHeight */}
       <div className="overflow-x-auto rounded-2xl border border-black/[0.08] bg-white">
         <p className="px-4 pt-4 pb-3 text-[13px] font-medium text-ink-muted">
           Выберите пункт выдачи или доставку курьером. Стоимость рассчитается автоматически.

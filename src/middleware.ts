@@ -11,6 +11,13 @@ import type { NextRequest } from "next/server";
  */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Отсекаем сканеры с фейковым Server Action ID (Next-Action: x и т.п.) — легитимный ID — длинный hex-хеш
+  const nextAction = request.headers.get("next-action");
+  if (nextAction !== null && !/^[0-9a-f]{20,}$/i.test(nextAction)) {
+    return new NextResponse(null, { status: 400 });
+  }
+
   const response = NextResponse.next();
 
   // ─── Security Headers ────────────────────────────────────────────────────

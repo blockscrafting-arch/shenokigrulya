@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/hooks/useCart";
@@ -11,15 +11,6 @@ import {
 } from "@/components/shop/DeliveryWidget";
 
 const SINGLE_PACKAGE = { weight: 3000, length: 37, width: 13, height: 23 };
-
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value);
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedValue(value), delay);
-    return () => clearTimeout(timer);
-  }, [value, delay]);
-  return debouncedValue;
-}
 
 export default function CartPage() {
   const { items, totalPrice, totalItems, updateQuantity, removeItem, clearCart } =
@@ -54,8 +45,6 @@ export default function CartPage() {
       }))
     );
   }, [items]);
-
-  const debouncedGoods = useDebounce(goods, 1200);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -442,7 +431,7 @@ export default function CartPage() {
         </h2>
         <DeliveryWidget
           fromCity={fromCity}
-          goods={debouncedGoods}
+          goods={goods}
           yandexMapsApiKey={yandexKey}
           onChoose={setDeliveryChoice}
         />
