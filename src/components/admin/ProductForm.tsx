@@ -122,7 +122,7 @@ export function ProductForm({ product }: ProductFormProps) {
           type="text"
           value={form.cdekFulfillmentProductId}
           onChange={(e) => setForm((f) => ({ ...f, cdekFulfillmentProductId: e.target.value }))}
-          placeholder="Привязка к складу фулфилмента"
+          placeholder="ID товара в ЛК СДЭК FF (например 34691025)"
           className="w-full rounded-lg border border-black/10 px-3 py-2"
         />
       </div>

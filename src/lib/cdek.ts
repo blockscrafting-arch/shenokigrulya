@@ -171,7 +171,9 @@ export async function createFulfillmentOrder(params: {
   if (!params.items.length || !params.items.every((i) => i.fulfillmentProductId && i.quantity > 0))
     return null;
 
-  const body = {
+  const warehouseId = process.env.CDEK_FF_WAREHOUSE_ID;
+
+  const body: Record<string, unknown> = {
     recipient: {
       name: params.recipient.name,
       phone: params.recipient.phone.replace(/\D/g, "").slice(-10),
@@ -180,6 +182,7 @@ export async function createFulfillmentOrder(params: {
       ? { type: "PVZ", pvz_code: params.pvzCode }
       : { type: "DOOR", address: params.address ?? params.pvzAddress ?? "" },
     items: params.items.map((i) => ({ product_id: i.fulfillmentProductId, quantity: i.quantity })),
+    ...(warehouseId && { warehouse_id: Number(warehouseId) }),
   };
 
   try {
