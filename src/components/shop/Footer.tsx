@@ -27,8 +27,7 @@ export function Footer() {
           </a>
         </div>
         <p className="text-center text-xs text-ink-muted">
-          &copy; {year} ИП Кушнерёв Кирилл.&nbsp;
-          УСН&#8209;6%,&nbsp;НДС не облагается (п.&nbsp;1 ст.&nbsp;346.11 НК&nbsp;РФ).
+          &copy; {year} ИП Кушнерёв Кирилл.
         </p>
       </div>
     </footer>
