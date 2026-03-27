@@ -20,10 +20,16 @@ export interface CreatePaymentParams {
   customerEmail: string;
   deliveryCost: number;
   items: { title: string; quantity: number; price: number }[];
+  /** Счётчик попытки: при повторном создании платежа (после отмены предыдущего)
+   *  меняем суффикс, иначе ЮKassa вернёт кешированный ответ из-за idempotence key (TTL 24ч) */
+  attempt?: number;
 }
 
 export async function createPayment(params: CreatePaymentParams): Promise<{ confirmationUrl: string; paymentId: string }> {
-  const idempotenceKey = `pay-${params.orderId}`;
+  // attempt позволяет пересоздать платёж после отмены:
+  // ЮKassa кэширует ответ по idempotence key 24ч — без суффикса вернётся старый отменённый платёж
+  const attempt = params.attempt ?? 1;
+  const idempotenceKey = `pay-${params.orderId}-${attempt}`;
 
   const receiptItems = [
     ...params.items.map((item) => ({

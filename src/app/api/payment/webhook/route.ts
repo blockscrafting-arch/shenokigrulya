@@ -81,7 +81,6 @@ export async function POST(request: Request) {
     }));
 
   let cdekFulfillmentOrderUuid: string | null = null;
-  let cdekTrackNumber: string | null = null;
 
   if (ffItems.length > 0) {
     const ffOrder = await createFulfillmentOrder({
@@ -93,10 +92,19 @@ export async function POST(request: Request) {
     });
     if (ffOrder) {
       cdekFulfillmentOrderUuid = ffOrder.orderUuid;
-      // FF может вернуть трек не сразу — пробуем через 3 секунды
-      await new Promise((r) => setTimeout(r, 3000));
-      const ffInfo = await getFulfillmentOrder(ffOrder.orderUuid);
-      cdekTrackNumber = ffInfo?.cdek_number ?? ffInfo?.track_number ?? null;
+      // Трек-номер СДЭК придёт позже через webhook ORDER_STATUS или при PATCH заказа в админке.
+      // Не ждём его здесь, чтобы ЮKassa не получила timeout на webhook response.
+      // Попытка получить трек сразу — в фоне, не блокируя ответ
+      getFulfillmentOrder(ffOrder.orderUuid).then((ffInfo) => {
+        const track = ffInfo?.cdek_number ?? ffInfo?.track_number ?? null;
+        if (track) {
+          // fire-and-forget: игнорируем ошибку если заказ уже обновлён
+          void prisma.order.updateMany({
+            where: { id: order.id, cdekTrackNumber: null },
+            data: { cdekTrackNumber: track },
+          }).catch((e) => console.warn("FF track update error:", e));
+        }
+      }).catch(() => {/* нет трека сейчас — придёт через webhook */});
     }
   }
 
@@ -107,7 +115,6 @@ export async function POST(request: Request) {
       paidAt: new Date(),
       status: cdekFulfillmentOrderUuid ? "PROCESSING" : undefined,
       ...(cdekFulfillmentOrderUuid && { cdekFulfillmentOrderUuid }),
-      ...(cdekTrackNumber && { cdekTrackNumber }),
     },
   });
 

@@ -8,11 +8,47 @@ import { getCdekToken } from "@/lib/cdek";
 
 const CDEK_API = process.env.CDEK_API_URL ?? "https://api.cdek.ru/v2";
 
+// Простой rate limiter: не более 60 запросов/мин с одного IP
+const widgetRateLimit = new Map<string, { count: number; resetAt: number }>();
+const WIDGET_RL_WINDOW_MS = 60_000;
+const WIDGET_RL_MAX = 60;
+
+// Очистка устаревших записей каждые 5 минут
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of widgetRateLimit) {
+    if (now > entry.resetAt) widgetRateLimit.delete(key);
+  }
+}, 5 * 60_000);
+
+function checkWidgetRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = widgetRateLimit.get(ip);
+  if (!entry) {
+    widgetRateLimit.set(ip, { count: 1, resetAt: now + WIDGET_RL_WINDOW_MS });
+    return true;
+  }
+  if (now > entry.resetAt) {
+    widgetRateLimit.set(ip, { count: 1, resetAt: now + WIDGET_RL_WINDOW_MS });
+    return true;
+  }
+  entry.count++;
+  return entry.count <= WIDGET_RL_MAX;
+}
+
 export async function GET(request: Request) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  if (!checkWidgetRateLimit(ip)) {
+    return NextResponse.json({ message: "Too Many Requests" }, { status: 429 });
+  }
   return handleRequest(request, Object.fromEntries(new URL(request.url).searchParams));
 }
 
 export async function POST(request: Request) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  if (!checkWidgetRateLimit(ip)) {
+    return NextResponse.json({ message: "Too Many Requests" }, { status: 429 });
+  }
   let body: Record<string, unknown> = {};
   try {
     const raw = await request.text();

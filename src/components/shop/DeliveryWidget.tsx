@@ -7,7 +7,12 @@ import { useEffect, useRef, useCallback } from "react";
 const WIDGET_SCRIPT = "https://cdn.jsdelivr.net/npm/@cdek-it/widget@3.11.1/dist/cdek-widget.umd.js";
 const WIDGET_ROOT_ID = "cdek-widget-root";
 
-const DEFAULT_PARCEL = { weight: 4000, width: 13, height: 23, length: 37 };
+/** Дефолтный вес посылки (г) — единая константа для cart и DeliveryWidget */
+export const DEFAULT_PACKAGE_WEIGHT = 3000;
+const DEFAULT_PARCEL = { weight: DEFAULT_PACKAGE_WEIGHT, width: 13, height: 23, length: 37 };
+
+/** Дебаунс (мс) на обновление посылок: исключает шторм resetParcels/addParcel при быстром клике +/- */
+const PARCELS_UPDATE_DEBOUNCE_MS = 400;
 
 export interface DeliveryChoice {
   deliveryType: "CDEK_PVZ" | "CDEK_DOOR";
@@ -68,6 +73,7 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
 
   const widgetRef = useRef<CDEKWidgetInstance | null>(null);
   const lastCityCodeRef = useRef<number | null>(null);
+  const parcelsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const initWidget = useCallback(() => {
     if (typeof window === "undefined" || !window.CDEKWidget) return;
@@ -140,16 +146,24 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey }: 
     if (window.CDEKWidget) initWidget();
   }, [initWidget]);
 
+  // Дебаунс 400мс: при быстрых кликах +/- накапливает изменения и отправляет
+  // в виджет один раз, вместо шторма resetParcels/addParcel на каждый клик
   useEffect(() => {
-    const w = widgetRef.current;
-    if (!w || typeof w.resetParcels !== "function" || typeof w.addParcel !== "function") return;
-    const parcels = buildParcelsFromGoods(goods);
-    try {
-      w.resetParcels();
-      w.addParcel(parcels);
-    } catch (e) {
-      console.error("CDEK widget parcels update error:", e);
-    }
+    if (parcelsTimerRef.current) clearTimeout(parcelsTimerRef.current);
+    parcelsTimerRef.current = setTimeout(() => {
+      const w = widgetRef.current;
+      if (!w || typeof w.resetParcels !== "function" || typeof w.addParcel !== "function") return;
+      const parcels = buildParcelsFromGoods(goods);
+      try {
+        w.resetParcels();
+        w.addParcel(parcels);
+      } catch (e) {
+        console.error("CDEK widget parcels update error:", e);
+      }
+    }, PARCELS_UPDATE_DEBOUNCE_MS);
+    return () => {
+      if (parcelsTimerRef.current) clearTimeout(parcelsTimerRef.current);
+    };
   }, [goods]);
 
   return (

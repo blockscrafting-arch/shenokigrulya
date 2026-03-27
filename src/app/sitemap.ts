@@ -18,6 +18,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
   return [
     { url: baseUrl, lastModified, changeFrequency: "weekly" as const, priority: 1 },
-    { url: `${baseUrl}/cart`, lastModified: new Date(), changeFrequency: "monthly" as const, priority: 0.5 },
   ];
 }

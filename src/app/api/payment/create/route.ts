@@ -60,6 +60,9 @@ export async function POST(request: Request) {
           returnUrl: returnUrl(order.id),
           customerEmail: order.customerEmail,
           deliveryCost: order.deliveryCost,
+          // attempt: если у заказа уже был yookassaId (предыдущая попытка отменена),
+          // используем счётчик попыток чтобы получить уникальный idempotence key
+          attempt: order.yookassaId ? 2 : 1,
           items: order.items.map((i) => ({
             title: i.product.title,
             quantity: i.quantity,

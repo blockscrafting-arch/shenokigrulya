@@ -67,18 +67,30 @@ export async function POST(request: Request) {
   if (data.deliveryCityCode && fromCityCode) {
     try {
       const tariffCode = data.tariffCode ?? (data.deliveryType === "CDEK_DOOR" ? 139 : 136);
-      // Суммарный вес заказа — из реальных данных товаров в БД, fallback 3000г на позицию
+      // Суммарный вес и максимальные габариты заказа — из реальных данных товаров в БД
       const totalWeightG = orderItems.reduce((sum, item) => {
         const product = productMap.get(item.productId);
         return sum + (product?.weight ?? 3000) * item.quantity;
+      }, 0);
+      const maxLength = orderItems.reduce((max, item) => {
+        const product = productMap.get(item.productId);
+        return Math.max(max, product?.length ?? 370);
+      }, 0);
+      const maxWidth = orderItems.reduce((max, item) => {
+        const product = productMap.get(item.productId);
+        return Math.max(max, product?.width ?? 130);
+      }, 0);
+      const maxHeight = orderItems.reduce((max, item) => {
+        const product = productMap.get(item.productId);
+        return Math.max(max, product?.height ?? 230);
       }, 0);
       const quote = await calculateDelivery({
         fromLocation: fromCityCode,
         toLocation: String(data.deliveryCityCode),
         weight: totalWeightG,
-        length: 370,
-        width: 130,
-        height: 230,
+        length: maxLength,
+        width: maxWidth,
+        height: maxHeight,
         tariffCode,
       });
       verifiedDeliveryCost = quote.sum;

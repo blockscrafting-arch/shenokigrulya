@@ -9,6 +9,15 @@ const WINDOW_MS = 60_000;
 
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
 
+// Периодическая очистка устаревших записей (каждые 5 минут)
+// предотвращает неограниченный рост Map на долгоживущем PM2-процессе
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of rateLimit) {
+    if (now > entry.resetAt) rateLimit.delete(key);
+  }
+}, 5 * 60_000);
+
 function checkRateLimit(ip: string): boolean {
   const now = Date.now();
   const entry = rateLimit.get(ip);

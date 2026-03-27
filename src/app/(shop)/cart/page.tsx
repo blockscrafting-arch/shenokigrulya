@@ -7,10 +7,11 @@ import { useCart } from "@/hooks/useCart";
 import { formatPrice } from "@/lib/utils";
 import {
   DeliveryWidget,
+  DEFAULT_PACKAGE_WEIGHT,
   type DeliveryChoice,
 } from "@/components/shop/DeliveryWidget";
 
-const SINGLE_PACKAGE = { weight: 3000, length: 37, width: 13, height: 23 };
+const SINGLE_PACKAGE = { weight: DEFAULT_PACKAGE_WEIGHT, length: 37, width: 13, height: 23 };
 
 export default function CartPage() {
   const { items, totalPrice, totalItems, updateQuantity, removeItem, clearCart } =
@@ -46,14 +47,14 @@ export default function CartPage() {
   const goods = useMemo(() => {
     const activeItems = items.filter((i) => i.quantity > 0);
     if (!activeItems.length) return [SINGLE_PACKAGE];
-    return activeItems.flatMap((i) =>
-      Array.from({ length: i.quantity }, () => ({
-        weight: i.weight ?? SINGLE_PACKAGE.weight,
-        length: SINGLE_PACKAGE.length,
-        width: SINGLE_PACKAGE.width,
-        height: SINGLE_PACKAGE.height,
-      }))
+    // Агрегируем в ОДИН пакет с суммарным весом и максимальными габаритами.
+    // СДЭК считает стоимость по пакетам, а не по штукам. Множество объектов
+    // вызывало шторм resetParcels/addParcel на каждый клик +/- и лаги карты.
+    const totalWeight = activeItems.reduce(
+      (sum, i) => sum + (i.weight ?? DEFAULT_PACKAGE_WEIGHT) * i.quantity,
+      0,
     );
+    return [{ weight: totalWeight, length: SINGLE_PACKAGE.length, width: SINGLE_PACKAGE.width, height: SINGLE_PACKAGE.height }];
   }, [items]);
 
   // Фоновый пересчёт стоимости доставки при изменении корзины (дебаунс 600 мс)
@@ -61,6 +62,7 @@ export default function CartPage() {
     const cityCode = deliveryChoice?.deliveryCityCode ?? lastKnownCityCodeRef.current;
     if (!cityCode || !deliveryChoice?.tariffCode) return;
     if (recalcTimerRef.current) clearTimeout(recalcTimerRef.current);
+    const controller = new AbortController();
     recalcTimerRef.current = setTimeout(async () => {
       setRecalculating(true);
       try {
@@ -72,6 +74,7 @@ export default function CartPage() {
             tariffCode: deliveryChoice.tariffCode,
             goods,
           }),
+          signal: controller.signal,
         });
         if (res.ok) {
           const data = (await res.json()) as {
@@ -90,7 +93,8 @@ export default function CartPage() {
               : prev
           );
         }
-      } catch {
+      } catch (err) {
+        if (err instanceof Error && err.name === "AbortError") return;
         // тихая ошибка — оставляем старое значение
       } finally {
         setRecalculating(false);
@@ -98,6 +102,7 @@ export default function CartPage() {
     }, 600);
     return () => {
       if (recalcTimerRef.current) clearTimeout(recalcTimerRef.current);
+      controller.abort();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [goods]);
@@ -472,7 +477,7 @@ export default function CartPage() {
 
             <button
               type="submit"
-              disabled={loading || totalItems < 1}
+              disabled={loading || totalItems < 1 || !deliveryChoice}
               className="w-full rounded-full bg-white py-5 font-heading text-xl md:text-2xl font-bold uppercase tracking-wider text-brand transition-all hover:bg-brand-light hover:scale-[1.02] disabled:opacity-50 active:scale-[0.98]"
             >
               {loading ? "СОЗДАНИЕ..." : "ОФОРМИТЬ ЗАКАЗ"}

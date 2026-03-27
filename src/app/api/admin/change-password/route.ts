@@ -7,6 +7,14 @@ const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_ATTEMPTS = 5;
 const changePasswordRateLimit = new Map<string, { count: number; resetAt: number }>();
 
+// Периодическая очистка устаревших записей (каждые 5 минут)
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, entry] of changePasswordRateLimit) {
+    if (now > entry.resetAt) changePasswordRateLimit.delete(key);
+  }
+}, 5 * 60_000);
+
 function checkChangePasswordRateLimit(key: string): boolean {
   const now = Date.now();
   const entry = changePasswordRateLimit.get(key);
