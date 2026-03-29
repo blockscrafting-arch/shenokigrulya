@@ -143,7 +143,6 @@ body {
   background: #ffffff;
   border-radius: 20px;
   width: min(860px, 95vw);
-  max-height: 88vh;
   overflow: hidden;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
   animation: cdek-popup-in 0.22s ease-out;
@@ -154,12 +153,13 @@ body {
   display: none;
 }
 
-/* Тело popup — виджет с overflow-hidden, чтобы не было лишних скроллбаров */
+/* Тело popup — виджет с центрированием и фиксированной высотой под контент */
 .cdek-popup-body {
-  flex: 1;
+  display: flex;
+  justify-content: center;  /* центрирует виджет 800px в popup 860px */
   overflow: hidden;
   position: relative;
-  min-height: 0;
+  flex-shrink: 0;            /* не растягивается → popup = header + 600px, без воздуха снизу */
 }
 
 /* Mobile: fullscreen с rounded top corners */
@@ -175,6 +175,15 @@ body {
     height: 100%;
     border-radius: 20px 20px 0 0;
     animation: cdek-popup-mobile-in 0.25s ease-out;
+  }
+
+  /* На мобиле тело должно растягиваться на оставшееся пространство */
+  .cdek-popup-body {
+    flex: 1;
+    flex-shrink: 1;
+    min-height: 0;
+    height: auto;
+    align-items: flex-start;
   }
 
   /* Drag handle — полоска сверху на мобильных */

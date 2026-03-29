@@ -284,8 +284,8 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey, ha
                   height: 600,
                   transform: `scale(${scaleFactor})`,
                   transformOrigin: "top left",
-                  // Высота контейнера ужимается по факту масштаба — тело popup не скроллится лишнее
-                  marginBottom: `${-(600 * (1 - scaleFactor))}px`,
+                  // marginBottom нужен только при scale < 1 (мобиль): схлопывает лишнее пространство после scale
+                  marginBottom: scaleFactor < 1 ? `${-(600 * (1 - scaleFactor))}px` : undefined,
                 }}
               />
             </div>
