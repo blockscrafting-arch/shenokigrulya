@@ -277,17 +277,25 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey, ha
 
             {/* Тело popup с масштабированием виджета */}
             <div ref={popupBodyRef} className="cdek-popup-body">
+              {/* Wrapper с точными визуальными размерами — определяет высоту тела и центрирует на десктопе */}
               <div
-                id={WIDGET_ROOT_ID}
                 style={{
-                  width: 800,
-                  height: 600,
-                  transform: `scale(${scaleFactor})`,
-                  transformOrigin: "top left",
-                  // marginBottom нужен только при scale < 1 (мобиль): схлопывает лишнее пространство после scale
-                  marginBottom: scaleFactor < 1 ? `${-(600 * (1 - scaleFactor))}px` : undefined,
+                  width: Math.round(800 * scaleFactor),
+                  height: Math.round(600 * scaleFactor),
+                  overflow: "hidden",
+                  margin: "0 auto",
                 }}
-              />
+              >
+                <div
+                  id={WIDGET_ROOT_ID}
+                  style={{
+                    width: 800,
+                    height: 600,
+                    transformOrigin: "top left",
+                    transform: `scale(${scaleFactor})`,
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
