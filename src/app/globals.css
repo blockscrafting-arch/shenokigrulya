@@ -106,3 +106,85 @@ body {
     text-wrap: balance;
   }
 }
+
+/* ── СДЭК виджет — универсальный popup (desktop: модалка, mobile: fullscreen) ── */
+
+@keyframes cdek-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes cdek-popup-in {
+  from { opacity: 0; transform: scale(0.97) translateY(10px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+@keyframes cdek-popup-mobile-in {
+  from { transform: translateY(24px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* Backdrop — полупрозрачный слой поверх страницы */
+.cdek-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  animation: cdek-backdrop-in 0.2s ease-out;
+}
+
+/* Popup-контейнер — desktop: центрированная карточка */
+.cdek-popup {
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  border-radius: 20px;
+  width: min(860px, 95vw);
+  max-height: 88vh;
+  overflow: hidden;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.22);
+  animation: cdek-popup-in 0.22s ease-out;
+}
+
+/* Drag handle — скрыт на десктопе */
+.cdek-popup-handle {
+  display: none;
+}
+
+/* Тело popup — виджет с overflow-hidden, чтобы не было лишних скроллбаров */
+.cdek-popup-body {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  min-height: 0;
+}
+
+/* Mobile: fullscreen с rounded top corners */
+@media (max-width: 767px) {
+  .cdek-popup-backdrop {
+    align-items: flex-end;
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  .cdek-popup {
+    width: 100%;
+    max-height: 100%;
+    height: 100%;
+    border-radius: 20px 20px 0 0;
+    animation: cdek-popup-mobile-in 0.25s ease-out;
+  }
+
+  /* Drag handle — полоска сверху на мобильных */
+  .cdek-popup-handle {
+    display: block;
+    width: 40px;
+    height: 4px;
+    background: #d1d5db;
+    border-radius: 2px;
+    margin: 10px auto 6px;
+    flex-shrink: 0;
+  }
+}

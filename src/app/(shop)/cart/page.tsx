@@ -414,7 +414,65 @@ export default function CartPage() {
             </div>
           </section>
 
-          {/* Delivery секция перенесена за пределы грида */}
+          {/* Доставка — компактная карточка внутри левой колонки */}
+          <section className="bg-white rounded-[2rem] p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
+            <h2 className="mb-4 font-heading text-3xl font-bold text-ink-dark uppercase tracking-wide">
+              Доставка
+            </h2>
+            <DeliveryWidget
+              fromCity={fromCity}
+              goods={goods}
+              yandexMapsApiKey={yandexKey}
+              onChoose={handleDeliveryChoose}
+              hasSelection={!!deliveryChoice}
+            />
+
+            {/* Карточка результата — адрес, стоимость, срок */}
+            {deliveryChoice && (
+              <div className="mt-4 rounded-2xl border border-green-100 bg-[#f0faf5] p-4">
+                <div className="flex items-start gap-2.5">
+                  <svg
+                    className="mt-0.5 h-4 w-4 shrink-0 text-green-600"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    strokeWidth={2.5}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                  </svg>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[13px] font-bold text-ink-dark leading-snug">
+                      {deliveryChoice.deliveryType === "CDEK_PVZ" ? "Пункт выдачи СДЭК" : "Курьер СДЭК"}
+                    </p>
+                    <p className="mt-0.5 text-[13px] leading-snug text-ink-secondary">
+                      {deliveryChoice.cdekPvzAddress || deliveryChoice.deliveryAddress}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-3 border-t border-green-100 pt-3">
+                  <span className="text-[14px] font-bold text-ink-dark">
+                    {recalculating ? (
+                      <span className="text-[13px] text-ink-muted">пересчёт…</span>
+                    ) : deliveryCost > 0 ? (
+                      formatPrice(deliveryCost)
+                    ) : (
+                      "Бесплатно"
+                    )}
+                  </span>
+                  {deliveryChoice.periodMin != null && !recalculating && (
+                    <span className="text-[12px] text-ink-muted">
+                      {deliveryChoice.periodMin}
+                      {deliveryChoice.periodMax && deliveryChoice.periodMax !== deliveryChoice.periodMin
+                        ? `–${deliveryChoice.periodMax}`
+                        : ""}{" "}
+                      дн.
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </section>
         </div>
 
         {/* RIGHT COLUMN: Black payment summary — sticky */}
@@ -497,28 +555,6 @@ export default function CartPage() {
         </div>
       </div>
 
-      {/* Delivery — full width, outside the 3-col grid so the map has room */}
-      <section className="mt-6 bg-white rounded-[2rem] p-6 md:p-8 shadow-[0_2px_12px_rgba(0,0,0,0.03)]">
-        <h2 className="mb-4 font-heading text-3xl font-bold text-ink-dark uppercase tracking-wide">
-          Доставка
-        </h2>
-        <DeliveryWidget
-          fromCity={fromCity}
-          goods={goods}
-          yandexMapsApiKey={yandexKey}
-          onChoose={handleDeliveryChoose}
-        />
-        {deliveryChoice && (
-          <div className="mt-6 flex items-center gap-3 rounded-xl bg-green-50 p-4">
-            <svg className="h-5 w-5 shrink-0 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <p className="text-[14px] font-bold text-green-800 uppercase tracking-wide leading-snug">
-              {deliveryChoice.deliveryType === "CDEK_PVZ" ? "ПВЗ" : "На дом"} &mdash; {deliveryChoice.cdekPvzAddress || deliveryChoice.deliveryAddress}
-            </p>
-          </div>
-        )}
-      </section>
     </form>
   );
 }
