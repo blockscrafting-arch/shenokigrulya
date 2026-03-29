@@ -160,7 +160,7 @@ body {
   flex-shrink: 0;
 }
 
-/* Mobile: bottom sheet с rounded top corners, высота по контенту */
+/* Mobile: fullscreen bottom sheet с rounded top corners */
 @media (max-width: 767px) {
   .cdek-popup-backdrop {
     align-items: flex-end;
@@ -169,9 +169,16 @@ body {
 
   .cdek-popup {
     width: 100%;
-    height: auto;              /* высота по контенту, не fullscreen */
+    height: 100%;              /* fullscreen — виджет заполнит всё */
     border-radius: 20px 20px 0 0;
     animation: cdek-popup-mobile-in 0.25s ease-out;
+  }
+
+  /* Body растягивается на оставшееся пространство — виджет рассчитает высоту по bodyHeight */
+  .cdek-popup-body {
+    flex: 1;
+    flex-shrink: 1;
+    min-height: 0;
   }
 
   /* Drag handle — полоска сверху на мобильных */

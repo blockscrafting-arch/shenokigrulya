@@ -77,16 +77,19 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey, ha
   const [hasOpenedOnce, setHasOpenedOnce] = useState(false);
   // Масштаб: 1 на десктопе (popup 860px > виджет 800px), <1 на узких экранах
   const [scaleFactor, setScaleFactor] = useState(1);
+  // Высота тела popup (обновляется через ResizeObserver) — нужна для расчёта высоты виджета на мобильном
+  const [bodyHeight, setBodyHeight] = useState(0);
   const popupBodyRef = useRef<HTMLDivElement>(null);
 
-  // Расчёт масштаба через ResizeObserver на теле popup
-  // Desktop (popup 860px): scaleFactor = min(1, 860/800) = 1 → без масштабирования
-  // Mobile (popup = viewport ~375px): scaleFactor = 375/800 ≈ 0.47
+  // Расчёт масштаба и высоты тела через ResizeObserver
+  // Desktop (popup 860px): scaleFactor = 1, bodyHeight = 600 → без масштабирования
+  // Mobile (popup = viewport ~390px): scaleFactor ≈ 0.49, bodyHeight = ~774 → виджет растягивается на весь экран
   useEffect(() => {
     if (!isPopupOpen || !popupBodyRef.current) return;
     const el = popupBodyRef.current;
     const update = () => {
       setScaleFactor(Math.min(1, el.clientWidth / 800));
+      setBodyHeight(el.clientHeight);
     };
     update();
     const ro = new ResizeObserver(update);
@@ -202,9 +205,14 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey, ha
   }, [goods]);
 
   const handleOpenPopup = () => {
-    // Сразу вычисляем масштаб — избегаем flash на первом рендере popup
-    // На десктопе popup шириной ~860px → scale = 1; на мобильном → <1
-    setScaleFactor(Math.min(1, Math.min(window.innerWidth * 0.95, 860) / 800));
+    // Pre-calc масштаб и высоту — избегаем flash на первом рендере
+    const popupW = Math.min(window.innerWidth, 860);
+    const sf = Math.min(1, popupW / 800);
+    setScaleFactor(sf);
+    if (sf < 1) {
+      // Мобильный: popup fullscreen, body = viewport - drag handle (~20px) - header (~52px)
+      setBodyHeight(window.innerHeight - 72);
+    }
     setHasOpenedOnce(true);
     setIsPopupOpen(true);
   };
@@ -277,25 +285,32 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey, ha
 
             {/* Тело popup с масштабированием виджета */}
             <div ref={popupBodyRef} className="cdek-popup-body">
-              {/* Wrapper с точными визуальными размерами — определяет высоту тела и центрирует на десктопе */}
-              <div
-                style={{
-                  width: Math.round(800 * scaleFactor),
-                  height: Math.round(600 * scaleFactor),
-                  overflow: "hidden",
-                  margin: "0 auto",
-                }}
-              >
-                <div
-                  id={WIDGET_ROOT_ID}
-                  style={{
-                    width: 800,
-                    height: 600,
-                    transformOrigin: "top left",
-                    transform: `scale(${scaleFactor})`,
-                  }}
-                />
-              </div>
+              {(() => {
+                // Mobile (sf < 1): виджету задаём высоту bodyHeight/sf — визуально заполняет всё тело
+                // Desktop (sf = 1): фиксированные 800×600, центрированы через margin:0 auto
+                const isMobileScale = scaleFactor < 1;
+                const widgetHeight = isMobileScale && bodyHeight > 0
+                  ? Math.max(600, Math.round(bodyHeight / scaleFactor))
+                  : 600;
+                return (
+                  <div
+                    style={isMobileScale
+                      ? { width: "100%", height: "100%", overflow: "hidden" }
+                      : { width: 800, height: 600, overflow: "hidden", margin: "0 auto" }
+                    }
+                  >
+                    <div
+                      id={WIDGET_ROOT_ID}
+                      style={{
+                        width: 800,
+                        height: widgetHeight,
+                        transformOrigin: "top left",
+                        transform: `scale(${scaleFactor})`,
+                      }}
+                    />
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
