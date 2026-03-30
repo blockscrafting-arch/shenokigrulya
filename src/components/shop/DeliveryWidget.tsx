@@ -131,7 +131,7 @@ export function DeliveryWidget({ fromCity, goods, onChoose, yandexMapsApiKey, ha
         defaultLocation: fromCity,
         lang: "rus",
         currency: "RUB",
-        tariffs: { office: [136, 138, 234], door: [137, 139, 233] },
+        tariffs: { office: [136], door: [137] },
         onCalculate: (
           _prices: unknown,
           address: { code?: number; address?: string },

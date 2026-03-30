@@ -71,7 +71,7 @@ export async function POST(request: Request) {
   const fromCityCode = process.env.CDEK_FROM_CITY_CODE ?? process.env.CDEK_FF_WAREHOUSE_CITY_CODE;
   if (data.deliveryCityCode && fromCityCode) {
     try {
-      const tariffCode = data.tariffCode ?? (data.deliveryType === "CDEK_DOOR" ? 139 : 136);
+      const tariffCode = data.tariffCode ?? (data.deliveryType === "CDEK_DOOR" ? 137 : 136);
       // Суммарный вес и максимальные габариты заказа — из реальных данных товаров в БД
       const totalWeightG = orderItems.reduce((sum, item) => {
         const product = productMap.get(item.productId);
