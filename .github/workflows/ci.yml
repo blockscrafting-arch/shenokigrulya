@@ -102,7 +102,6 @@ jobs:
       DATABASE_URL: postgresql://igrulya:secret@localhost:5432/igrulya_build
       JWT_SECRET: ci-build-jwt-secret-must-be-long-enough-for-hs256
       NEXT_PUBLIC_APP_URL: http://localhost:3000
-      NODE_ENV: production
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -112,3 +111,5 @@ jobs:
       - run: npm ci
       - run: npx prisma db push
       - run: npm run build
+        env:
+          NODE_ENV: production
