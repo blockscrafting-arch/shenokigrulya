@@ -312,6 +312,7 @@ export function ProductGallery({ images, videoUrl }: ProductGalleryProps) {
           >
             <button
               type="button"
+              aria-label="Закрыть просмотр"
               onClick={closeLightbox}
               className="absolute right-6 top-6 z-10 rounded-full bg-black/5 p-3 text-black hover:bg-black/10 transition-colors"
             >
@@ -324,6 +325,7 @@ export function ProductGallery({ images, videoUrl }: ProductGalleryProps) {
               <>
                 <button
                   type="button"
+                  aria-label="Предыдущее фото"
                   onClick={(e) => { e.stopPropagation(); prevImage(); }}
                   className="absolute left-6 z-10 rounded-full bg-black/5 p-4 text-black hover:bg-black/10 transition-colors hidden sm:block"
                 >
@@ -333,6 +335,7 @@ export function ProductGallery({ images, videoUrl }: ProductGalleryProps) {
                 </button>
                 <button
                   type="button"
+                  aria-label="Следующее фото"
                   onClick={(e) => { e.stopPropagation(); nextImage(); }}
                   className="absolute right-6 z-10 rounded-full bg-black/5 p-4 text-black hover:bg-black/10 transition-colors hidden sm:block"
                 >

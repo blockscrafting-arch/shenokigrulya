@@ -49,11 +49,15 @@ export async function PATCH(
 
   // Если у заказа есть FF UUID но нет трека — пробуем подтянуть
   if (order.cdekFulfillmentOrderUuid && !order.cdekTrackNumber) {
-    const ffInfo = await getFulfillmentOrder(order.cdekFulfillmentOrderUuid);
-    const track = ffInfo?.cdek_number ?? ffInfo?.track_number ?? null;
-    if (track) {
-      await prisma.order.update({ where: { id }, data: { cdekTrackNumber: track } });
-      return NextResponse.json({ ...order, cdekTrackNumber: track });
+    try {
+      const ffInfo = await getFulfillmentOrder(order.cdekFulfillmentOrderUuid);
+      const track = ffInfo?.cdek_number ?? ffInfo?.track_number ?? null;
+      if (track) {
+        await prisma.order.update({ where: { id }, data: { cdekTrackNumber: track } });
+        return NextResponse.json({ ...order, cdekTrackNumber: track });
+      }
+    } catch (err) {
+      console.warn("[orders PATCH] getFulfillmentOrder:", err);
     }
   }
 

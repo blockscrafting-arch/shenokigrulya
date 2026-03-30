@@ -34,23 +34,28 @@ export async function POST(request: Request) {
   }
 
   const data = parsed.data;
-  const product = await prisma.product.create({
-    data: {
-      title: data.title,
-      description: data.description ?? null,
-      composition: data.composition ?? null,
-      price: data.price,
-      ozonUrl: data.ozonUrl || null,
-      badges: data.badges,
-      images: data.images,
-      videoUrl: data.videoUrl ?? null,
-      weight: data.weight ?? null,
-      length: data.length ?? null,
-      width: data.width ?? null,
-      height: data.height ?? null,
-      cdekFulfillmentProductId: data.cdekFulfillmentProductId ?? null,
-      isActive: data.isActive,
-    },
-  });
-  return NextResponse.json(product);
+  try {
+    const product = await prisma.product.create({
+      data: {
+        title: data.title,
+        description: data.description ?? null,
+        composition: data.composition ?? null,
+        price: data.price,
+        ozonUrl: data.ozonUrl || null,
+        badges: data.badges,
+        images: data.images,
+        videoUrl: data.videoUrl ?? null,
+        weight: data.weight ?? null,
+        length: data.length ?? null,
+        width: data.width ?? null,
+        height: data.height ?? null,
+        cdekFulfillmentProductId: data.cdekFulfillmentProductId ?? null,
+        isActive: data.isActive,
+      },
+    });
+    return NextResponse.json(product);
+  } catch (err) {
+    console.error("[products POST] prisma create:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

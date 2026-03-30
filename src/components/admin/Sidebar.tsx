@@ -14,8 +14,12 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const handleLogout = () => {
-    document.cookie = "admin_token=; path=/; max-age=0";
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    } catch {
+      /* сеть недоступна — всё равно уводим на логин */
+    }
     router.push("/admin/login");
     router.refresh();
   };

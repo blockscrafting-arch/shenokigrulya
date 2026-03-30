@@ -42,7 +42,13 @@ export async function POST(request: Request) {
   const admin = await getAdminFromRequest();
   if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const formData = await request.formData();
+  let formData: FormData;
+  try {
+    formData = await request.formData();
+  } catch {
+    return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
+  }
+
   const file = formData.get("file") as File | null;
   if (!file) return NextResponse.json({ error: "file required" }, { status: 400 });
 
@@ -61,8 +67,14 @@ export async function POST(request: Request) {
     );
   }
 
-  const bytes = await file.arrayBuffer();
-  const buffer = Buffer.from(bytes);
+  let buffer: Buffer;
+  try {
+    const bytes = await file.arrayBuffer();
+    buffer = Buffer.from(bytes);
+  } catch {
+    return NextResponse.json({ error: "Не удалось прочитать файл" }, { status: 400 });
+  }
+
   if (buffer.length > MAX_SIZE_BYTES) {
     return NextResponse.json(
       { error: "Размер файла не должен превышать 5 МБ" },
@@ -79,9 +91,15 @@ export async function POST(request: Request) {
   const safeExt = ALLOWED_EXT.has(ext) ? ext : ".jpg";
   const name = `${Date.now()}-${Math.random().toString(36).slice(2)}${safeExt}`;
   const uploadDir = path.join(process.cwd(), "public", "uploads");
-  await mkdir(uploadDir, { recursive: true });
   const filePath = path.join(uploadDir, name);
-  await writeFile(filePath, buffer);
+
+  try {
+    await mkdir(uploadDir, { recursive: true });
+    await writeFile(filePath, buffer);
+  } catch (err) {
+    console.error("[upload] write failed:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 
   const url = `/uploads/${name}`;
   return NextResponse.json({ url });

@@ -38,28 +38,33 @@ export async function PUT(
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   const data = parsed.data;
-  const product = await prisma.product.update({
-    where: { id },
-    data: {
-      ...(data.title != null && { title: data.title }),
-      ...(data.description !== undefined && { description: data.description ?? null }),
-      ...(data.composition !== undefined && { composition: data.composition ?? null }),
-      ...(data.price != null && { price: data.price }),
-      ...(data.ozonUrl !== undefined && { ozonUrl: data.ozonUrl || null }),
-      ...(data.badges !== undefined && { badges: data.badges }),
-      ...(data.images !== undefined && { images: data.images }),
-      ...(data.videoUrl !== undefined && { videoUrl: data.videoUrl ?? null }),
-      ...(data.weight !== undefined && { weight: data.weight ?? null }),
-      ...(data.length !== undefined && { length: data.length ?? null }),
-      ...(data.width !== undefined && { width: data.width ?? null }),
-      ...(data.height !== undefined && { height: data.height ?? null }),
-      ...(data.cdekFulfillmentProductId !== undefined && {
-        cdekFulfillmentProductId: data.cdekFulfillmentProductId ?? null,
-      }),
-      ...(data.isActive !== undefined && { isActive: data.isActive }),
-    },
-  });
-  return NextResponse.json(product);
+  try {
+    const product = await prisma.product.update({
+      where: { id },
+      data: {
+        ...(data.title != null && { title: data.title }),
+        ...(data.description !== undefined && { description: data.description ?? null }),
+        ...(data.composition !== undefined && { composition: data.composition ?? null }),
+        ...(data.price != null && { price: data.price }),
+        ...(data.ozonUrl !== undefined && { ozonUrl: data.ozonUrl || null }),
+        ...(data.badges !== undefined && { badges: data.badges }),
+        ...(data.images !== undefined && { images: data.images }),
+        ...(data.videoUrl !== undefined && { videoUrl: data.videoUrl ?? null }),
+        ...(data.weight !== undefined && { weight: data.weight ?? null }),
+        ...(data.length !== undefined && { length: data.length ?? null }),
+        ...(data.width !== undefined && { width: data.width ?? null }),
+        ...(data.height !== undefined && { height: data.height ?? null }),
+        ...(data.cdekFulfillmentProductId !== undefined && {
+          cdekFulfillmentProductId: data.cdekFulfillmentProductId ?? null,
+        }),
+        ...(data.isActive !== undefined && { isActive: data.isActive }),
+      },
+    });
+    return NextResponse.json(product);
+  } catch (err) {
+    console.error("[products PUT] prisma update:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
 
 export async function DELETE(
@@ -73,9 +78,14 @@ export async function DELETE(
   const existing = await prisma.product.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  await prisma.product.update({
-    where: { id },
-    data: { isActive: false },
-  });
-  return NextResponse.json({ ok: true });
+  try {
+    await prisma.product.update({
+      where: { id },
+      data: { isActive: false },
+    });
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("[products DELETE] prisma update:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

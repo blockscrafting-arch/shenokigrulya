@@ -16,7 +16,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   } catch {
     // БД недоступна при сборке — используем текущую дату
   }
+  const yearly = "yearly" as const;
   return [
     { url: baseUrl, lastModified, changeFrequency: "weekly" as const, priority: 1 },
+    { url: `${baseUrl}/offer`, lastModified, changeFrequency: yearly, priority: 0.3 },
+    { url: `${baseUrl}/privacy`, lastModified, changeFrequency: yearly, priority: 0.3 },
   ];
 }

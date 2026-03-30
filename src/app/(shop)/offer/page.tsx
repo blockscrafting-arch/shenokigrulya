@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function OfferPage() {
   return (
-    <main className="mx-auto max-w-4xl px-5 py-12 md:px-8 md:py-20">
+    <article className="mx-auto max-w-4xl px-5 py-12 md:px-8 md:py-20">
       <h1 className="font-heading text-4xl font-bold text-ink uppercase tracking-wide mb-2">
         Публичная оферта
       </h1>
@@ -346,6 +346,6 @@ export default function OfferPage() {
         </section>
 
       </div>
-    </main>
+    </article>
   );
 }

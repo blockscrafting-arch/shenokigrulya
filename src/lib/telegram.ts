@@ -40,11 +40,15 @@ export async function sendOrderNotification(payload: OrderNotificationPayload): 
 
   const text = lines.join("\n");
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
-  await fetch(url, {
+  const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
   });
+  if (!response.ok) {
+    const errText = await response.text().catch(() => "");
+    console.error("[Telegram] sendMessage failed:", response.status, errText.slice(0, 500));
+  }
 }
 
 async function getSettingsChatId(): Promise<string | null> {

@@ -90,7 +90,8 @@ async function handleRequest(
   };
 
   if (action === "offices") {
-    const { action: _a, ...query } = requestData;
+    const query = { ...requestData } as Record<string, unknown>;
+    delete query.action;
     const qs = new URLSearchParams();
     for (const [k, v] of Object.entries(query)) {
       if (v !== undefined && v !== null && v !== "")
@@ -112,7 +113,8 @@ async function handleRequest(
   }
 
   if (action === "calculate") {
-    const { action: _a, ...body } = requestData;
+    const body = { ...requestData } as Record<string, unknown>;
+    delete body.action;
     const res = await fetch(`${CDEK_API}/calculator/tarifflist`, {
       method: "POST",
       headers,

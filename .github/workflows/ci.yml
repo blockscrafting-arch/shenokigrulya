@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  lint-and-typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: npm run test:coverage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: igrulya
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB: igrulya_test
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://igrulya:secret@localhost:5432/igrulya_test
+      JWT_SECRET: ci-test-jwt-secret-must-be-long-enough-for-hs256
+      YOOKASSA_SHOP_ID: "999999"
+      YOOKASSA_SECRET_KEY: test_dummy_secret
+      CDEK_ACCOUNT: "test"
+      CDEK_SECURE_PASSWORD: "test"
+      CDEK_FROM_CITY_CODE: "44"
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      E2E_RELAX_LOGIN_RATELIMIT: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: npx prisma db push
+      - run: npx tsx prisma/seed.ts
+      - run: npm run build
+        env:
+          NODE_ENV: production
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test --project=chromium
+        env:
+          CI: "true"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: igrulya
+          POSTGRES_PASSWORD: secret
+          POSTGRES_DB: igrulya_build
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://igrulya:secret@localhost:5432/igrulya_build
+      JWT_SECRET: ci-build-jwt-secret-must-be-long-enough-for-hs256
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NODE_ENV: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: npx prisma db push
+      - run: npm run build

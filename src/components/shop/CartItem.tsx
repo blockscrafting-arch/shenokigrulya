@@ -44,6 +44,7 @@ export function CartItem({ item }: CartItemProps) {
           <div className="flex items-center rounded-xl border border-line/60 bg-surface p-1">
             <button
               type="button"
+              aria-label="Уменьшить количество"
               onClick={() => updateQuantity(item.productId, item.quantity - 1)}
               className="flex h-8 w-8 items-center justify-center rounded-lg text-ink transition-colors hover:bg-line/50 active:scale-95"
             >
@@ -54,6 +55,7 @@ export function CartItem({ item }: CartItemProps) {
             </span>
             <button
               type="button"
+              aria-label="Увеличить количество"
               onClick={() => updateQuantity(item.productId, item.quantity + 1)}
               className="flex h-8 w-8 items-center justify-center rounded-lg text-ink transition-colors hover:bg-line/50 active:scale-95"
             >

@@ -13,17 +13,22 @@ export async function GET(request: Request) {
   const limit = Math.min(50, Math.max(1, Number(searchParams.get("limit")) || 20));
   const skip = (page - 1) * limit;
 
-  const [orders, total] = await Promise.all([
-    prisma.order.findMany({
-      orderBy: { createdAt: "desc" },
-      skip,
-      take: limit,
-      include: { items: { include: { product: true } } },
-    }),
-    prisma.order.count(),
-  ]);
+  try {
+    const [orders, total] = await Promise.all([
+      prisma.order.findMany({
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+        include: { items: { include: { product: true } } },
+      }),
+      prisma.order.count(),
+    ]);
 
-  return NextResponse.json({ orders, total, page, limit });
+    return NextResponse.json({ orders, total, page, limit });
+  } catch (err) {
+    console.error("[orders GET] prisma:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }
 
 export async function POST(request: Request) {
@@ -102,28 +107,33 @@ export async function POST(request: Request) {
 
   const totalAmountFinal = itemsTotal + verifiedDeliveryCost;
 
-  const order = await prisma.order.create({
-    data: {
-      customerName: data.customerName,
-      customerPhone: data.customerPhone,
-      customerEmail: data.customerEmail,
-      comment: data.comment ?? null,
-      deliveryType: data.deliveryType,
-      deliveryAddress: data.deliveryAddress ?? null,
-      cdekPvzCode: data.cdekPvzCode ?? null,
-      cdekPvzAddress: data.cdekPvzAddress ?? null,
-      deliveryCost: verifiedDeliveryCost,
-      totalAmount: totalAmountFinal,
-      items: {
-        create: orderItems.map((item) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.price,
-        })),
+  try {
+    const order = await prisma.order.create({
+      data: {
+        customerName: data.customerName,
+        customerPhone: data.customerPhone,
+        customerEmail: data.customerEmail,
+        comment: data.comment ?? null,
+        deliveryType: data.deliveryType,
+        deliveryAddress: data.deliveryAddress ?? null,
+        cdekPvzCode: data.cdekPvzCode ?? null,
+        cdekPvzAddress: data.cdekPvzAddress ?? null,
+        deliveryCost: verifiedDeliveryCost,
+        totalAmount: totalAmountFinal,
+        items: {
+          create: orderItems.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price,
+          })),
+        },
       },
-    },
-    include: { items: { include: { product: true } } },
-  });
+      include: { items: { include: { product: true } } },
+    });
 
-  return NextResponse.json({ orderId: order.id, orderNumber: order.orderNumber });
+    return NextResponse.json({ orderId: order.id, orderNumber: order.orderNumber });
+  } catch (err) {
+    console.error("[orders POST] prisma create:", err);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
 }

@@ -4,7 +4,8 @@ import { verifyPassword, generateToken } from "@/lib/auth";
 import { loginSchema } from "@/lib/validators";
 
 const COOKIE_NAME = "admin_token";
-const MAX_ATTEMPTS = 5;
+/** «unknown» IP при прямых вызовах с localhost — общий счётчик на все E2E; 80 хватает на длинный прогон */
+const MAX_ATTEMPTS = 80;
 const WINDOW_MS = 60_000;
 
 const rateLimit = new Map<string, { count: number; resetAt: number }>();
@@ -19,6 +20,7 @@ setInterval(() => {
 }, 5 * 60_000);
 
 function checkRateLimit(ip: string): boolean {
+  if (process.env.E2E_RELAX_LOGIN_RATELIMIT === "1") return true;
   const now = Date.now();
   const entry = rateLimit.get(ip);
   if (!entry) {
@@ -62,9 +64,12 @@ export async function POST(request: Request) {
 
   const token = generateToken({ adminId: admin.id, login: admin.login });
   const res = NextResponse.json({ ok: true });
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const cookieSecure =
+    process.env.NODE_ENV === "production" && appUrl.startsWith("https://");
   res.cookies.set(COOKIE_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: cookieSecure,
     sameSite: "strict",
     maxAge: 7 * 24 * 60 * 60,
     path: "/",
