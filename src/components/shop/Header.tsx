@@ -15,8 +15,8 @@ export function Header() {
           <Image
             src="/logo/logo-color.svg"
             alt="Щенок Игруля"
-            width={210}
-            height={84}
+            width={172}
+            height={52}
             priority
           />
         </Link>

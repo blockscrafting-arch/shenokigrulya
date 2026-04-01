@@ -8,8 +8,8 @@ export default function NotFound() {
         <Image
           src="/logo/logo-color.svg"
           alt="Щенок Игруля"
-          width={200}
-          height={60}
+          width={172}
+          height={52}
           className="mx-auto h-auto w-48"
           priority
         />
